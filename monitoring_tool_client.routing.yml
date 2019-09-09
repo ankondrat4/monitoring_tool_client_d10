@@ -1,0 +1,17 @@
+monitoring_tool_client.settings_form:
+  path: '/admin/config/services/monitoring-tool-client'
+  defaults:
+    _title: 'Client - Settings form'
+    _form: '\Drupal\monitoring_tool_client\Form\SettingsForm'
+  requirements:
+    _permission: 'monitoring tool client settings'
+
+monitoring_tool_client.webhook.http:
+  path: '/monitoring-tool-client/webhook'
+  defaults:
+    _controller: \Drupal\monitoring_tool_client\Controller\WebHookController::sendModules
+  methods: [GET]
+  requirements:
+    _access: 'TRUE'
+  options:
+    no_cache: TRUE

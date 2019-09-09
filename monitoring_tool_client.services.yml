@@ -1,0 +1,12 @@
+services:
+  monitoring_tool_client.server_connector:
+    class: Drupal\monitoring_tool_client\Service\ServerConnectorService
+    arguments: ['@http_client']
+
+  monitoring_tool_client.module_collector:
+    class: Drupal\monitoring_tool_client\Service\ModuleCollectorService
+    arguments: ['@extension.list.module', '@config.factory', '@cache.default']
+
+  monitoring_tool_client.client_api:
+    class: Drupal\monitoring_tool_client\Service\ClientApiService
+    arguments: ['@monitoring_tool_client.server_connector', '@monitoring_tool_client.module_collector']
