@@ -72,7 +72,7 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
 
     $result = $this->collectModules();
 
-    $this->cache->set(static::CACHE_CID, $result, static::CACHE_EXPIRE_TIME);
+    $this->cache->set(static::CACHE_CID, $result, \Drupal::time()->getRequestTime() + static::CACHE_EXPIRE_TIME);
 
     return $result;
   }
