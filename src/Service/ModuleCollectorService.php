@@ -4,6 +4,7 @@ namespace Drupal\monitoring_tool_client\Service;
 
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Extension\Extension;
 use Drupal\Core\Extension\ModuleExtensionList;
 
 /**
@@ -85,16 +86,19 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
    * @return bool
    *   Filter or not.
    */
-  public static function filterContribModules($module) {
+  public static function filterContribModules(Extension $module) {
+    $info = isset($module->info) ? $module->info : [];
+
     if (
+      isset($info['project']) &&
       // Will ignore exaction not modules.
       $module->getType() === 'module' &&
       // Will ignore the drupal core modules.
-      $module->info['project'] !== 'drupal' &&
+      $info['project'] !== 'drupal' &&
       // Will ignore the modules that are located in the same folder.
-      $module->getName() === $module->info['project'] &&
+      $module->getName() === $info['project'] &&
       // Will ignore the child modules.
-      basename(dirname($module->getPathname())) === $module->info['project']
+      basename(dirname($module->getPathname())) === $info['project']
     ) {
       return TRUE;
     }
@@ -126,10 +130,11 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
     ];
 
     foreach ($module_list as $module_name => $module) {
+      $info = isset($module->info) ? $module->info : [];
       $result[$module_name] = [
         'machine_name' => $module->getName(),
-        'name' => $module->info['name'],
-        'version' => $module->info['version'],
+        'name' => $info['name'],
+        'version' => $info['version'],
         'weak_status' => !empty($weak_list[$module->getName()]),
       ];
     }

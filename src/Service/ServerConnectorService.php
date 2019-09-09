@@ -12,11 +12,15 @@ use GuzzleHttp\RequestOptions;
 class ServerConnectorService implements ServerConnectorServiceInterface {
 
   /**
+   * Guzzle HTTP client.
+   *
    * @var \GuzzleHttp\ClientInterface
    */
   protected $httpClient;
 
   /**
+   * Settings for the HTTP client.
+   *
    * @var array
    */
   protected $settings;
@@ -25,6 +29,7 @@ class ServerConnectorService implements ServerConnectorServiceInterface {
    * ServerConnectorService constructor.
    *
    * @param \GuzzleHttp\ClientInterface $http_client
+   *   Guzzle HTTP client.
    */
   public function __construct(ClientInterface $http_client) {
     $this->httpClient = $http_client;

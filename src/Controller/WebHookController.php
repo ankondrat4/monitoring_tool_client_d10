@@ -48,8 +48,11 @@ class WebHookController implements ContainerInjectionInterface {
    * WebHookController constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   Config factory service.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+   *   Request stack.
    * @param \Drupal\monitoring_tool_client\Service\ClientApiServiceInterface $client_api
+   *   HTTP Guzzle client.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
@@ -61,6 +64,9 @@ class WebHookController implements ContainerInjectionInterface {
     $this->clientApi = $client_api;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
@@ -73,15 +79,18 @@ class WebHookController implements ContainerInjectionInterface {
    * WebHook route callback.
    *
    * @return \Symfony\Component\HttpFoundation\Response
+   *   Http response.
    */
   public function sendModules() {
     $this->checkAccess();
 
     try {
       $this->clientApi->sendModules();
-    } catch (GuzzleException $exception) {
+    }
+    catch (GuzzleException $exception) {
       return new Response(NULL, Response::HTTP_SERVICE_UNAVAILABLE);
-    } catch (HttpExceptionInterface $exception) {
+    }
+    catch (HttpExceptionInterface $exception) {
       return new Response(NULL, $exception->getStatusCode(), $exception->getHeaders());
     }
 
@@ -113,6 +122,7 @@ class WebHookController implements ContainerInjectionInterface {
    * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
    *
    * @return \Symfony\Component\HttpFoundation\Request
+   *   Http request.
    */
   private function request() {
     $request = $this->requestStack->getCurrentRequest();

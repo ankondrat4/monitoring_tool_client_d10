@@ -8,23 +8,13 @@
 use Drupal\monitoring_tool_client\Service\ModuleCollectorServiceInterface;
 
 /**
- * Cron interval time.
- */
-const MONITORING_TOOL_CLIENT_CRON_INTERVAL = ModuleCollectorServiceInterface::CACHE_EXPIRE_TIME;
-
-/**
- * State API key.
- */
-const MONITORING_TOOL_CLIENT_NEXT_EXECUTION_KEY = 'monitoring_tool_client.next_execution';
-
-/**
  * Implements hook_cron().
  */
 function monitoring_tool_client_cron() {
   /** @var \Drupal\Core\State\StateInterface $state_api */
   $state_api = \Drupal::state();
   $request_time = \Drupal::time()->getRequestTime();
-  $next_execution = $state_api->get(MONITORING_TOOL_CLIENT_NEXT_EXECUTION_KEY, 0);
+  $next_execution = $state_api->get('monitoring_tool_client.next_execution', 0);
 
   // @TODO Need to change the condition to morning and lunch.
   if ($request_time >= $next_execution) {
@@ -42,13 +32,6 @@ function monitoring_tool_client_cron() {
       $client_api->sendModules();
     }
 
-    $state_api->set(MONITORING_TOOL_CLIENT_NEXT_EXECUTION_KEY, $request_time + MONITORING_TOOL_CLIENT_CRON_INTERVAL);
+    $state_api->set('monitoring_tool_client.next_execution', $request_time + ModuleCollectorServiceInterface::CACHE_EXPIRE_TIME);
   }
-}
-
-/**
- * Implements hook_uninstall().
- */
-function monitoring_tool_client_uninstall() {
-  \Drupal::state()->delete(MONITORING_TOOL_CLIENT_NEXT_EXECUTION_KEY);
 }

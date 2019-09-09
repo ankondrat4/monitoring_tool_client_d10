@@ -24,9 +24,9 @@ class ClientApiService implements ClientApiServiceInterface {
   /**
    * ClientApiService constructor.
    *
-   * @param \Drupal\monitoring_tool_client\Service\ServerConnectorServiceInterface
+   * @param \Drupal\monitoring_tool_client\Service\ServerConnectorServiceInterface $server_connector
    *   Connector service, will send data to monitoring tool server.
-   * @param \Drupal\monitoring_tool_client\Service\ModuleCollectorServiceInterface
+   * @param \Drupal\monitoring_tool_client\Service\ModuleCollectorServiceInterface $module_collector
    *   Will gets the list of contribution modules.
    */
   public function __construct(

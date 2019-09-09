@@ -18,4 +18,5 @@ $settings['monitoring_tool'] = [
 More information about options you can read here:
 http://docs.guzzlephp.org/en/stable/request-options.html
  
- 2. Then configure the settings on /admin/config/services/monitoring-tool-client.
+ 2. Then configure the settings on this page:
+    /admin/config/services/monitoring-tool-client.
