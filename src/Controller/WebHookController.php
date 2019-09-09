@@ -5,6 +5,7 @@ namespace Drupal\monitoring_tool_client\Controller;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\monitoring_tool_client\Service\ClientApiServiceInterface;
+use Drupal\monitoring_tool_client\Service\ServerConnectorServiceInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -17,11 +18,6 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
  * Class WebHookController.
  */
 class WebHookController implements ContainerInjectionInterface {
-
-  /**
-   * HTTP header access token name.
-   */
-  const MONITORING_TOOL_ACCESS_HEADER = 'monitoring-tool-token';
 
   /**
    * Config factory.
@@ -109,8 +105,8 @@ class WebHookController implements ContainerInjectionInterface {
 
     if (
         $config->get('use_webhook') === FALSE ||
-        $request->headers->has(static::MONITORING_TOOL_ACCESS_HEADER) === FALSE ||
-        $config->get('secure_token') !== $request->headers->get(static::MONITORING_TOOL_ACCESS_HEADER)
+        $request->headers->has(ServerConnectorServiceInterface::MONITORING_TOOL_ACCESS_HEADER) === FALSE ||
+        $config->get('secure_token') !== $request->headers->get(ServerConnectorServiceInterface::MONITORING_TOOL_ACCESS_HEADER)
     ) {
       throw new AccessDeniedHttpException();
     }

@@ -1,7 +1,7 @@
 services:
   monitoring_tool_client.server_connector:
     class: Drupal\monitoring_tool_client\Service\ServerConnectorService
-    arguments: ['@http_client']
+    arguments: ['@http_client', '@config.factory']
 
   monitoring_tool_client.module_collector:
     class: Drupal\monitoring_tool_client\Service\ModuleCollectorService

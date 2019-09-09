@@ -13,6 +13,11 @@ interface ServerConnectorServiceInterface {
   const MONITORING_TOOL_ENDPOINT = '/monitoring-tool/input';
 
   /**
+   * HTTP header access token name.
+   */
+  const MONITORING_TOOL_ACCESS_HEADER = 'monitoring-tool-token';
+
+  /**
    * Will send data to the common Monitoring Tool server.
    *
    * @param array $data
