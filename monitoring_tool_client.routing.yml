@@ -12,6 +12,6 @@ monitoring_tool_client.webhook.http:
     _controller: '\Drupal\monitoring_tool_client\Controller\WebHookController::sendModules'
   methods: [GET]
   requirements:
-    _access: TRUE
+    _access: 'TRUE'
   options:
     no_cache: TRUE

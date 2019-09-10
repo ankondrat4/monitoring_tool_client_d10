@@ -5,7 +5,7 @@ services:
 
   monitoring_tool_client.module_collector:
     class: Drupal\monitoring_tool_client\Service\ModuleCollectorService
-    arguments: ['@extension.list.module', '@config.factory', '@cache.default']
+    arguments: ['@extension.list.module', '@config.factory']
 
   monitoring_tool_client.client_api:
     class: Drupal\monitoring_tool_client\Service\ClientApiService
