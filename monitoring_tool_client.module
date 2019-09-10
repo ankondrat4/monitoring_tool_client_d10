@@ -1,0 +1,37 @@
+<?php
+
+/**
+ * @file
+ * Common module file.
+ */
+
+/**
+ * Implements hook_cron().
+ */
+function monitoring_tool_client_cron() {
+  /** @var \Drupal\Core\State\StateInterface $state_api */
+  $state_api = \Drupal::state();
+  $request_time = \Drupal::time()->getRequestTime();
+  $next_execution = $state_api->get('monitoring_tool_client.next_execution', 0);
+
+  if ($request_time < $next_execution) {
+    return;
+  }
+
+  // 21600 - it is 6h.
+  $state_api->set('monitoring_tool_client.next_execution', $request_time + 21600);
+
+  /** @var \Drupal\monitoring_tool_client\Service\ModuleCollectorServiceInterface $collector */
+  $collector = \Drupal::service('monitoring_tool_client.module_collector');
+  /** @var \Drupal\Core\Config\ImmutableConfig $setting */
+  $setting = \Drupal::configFactory()->get('monitoring_tool_client.settings');
+
+  $collector->resetCache();
+
+  if ($setting->get('use_webhook') === FALSE) {
+    /** @var \Drupal\monitoring_tool_client\Service\ClientApiServiceInterface $client_api */
+    $client_api = \Drupal::service('monitoring_tool_client.client_api');
+
+    $client_api->sendModules();
+  }
+}
