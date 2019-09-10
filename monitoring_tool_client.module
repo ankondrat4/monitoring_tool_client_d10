@@ -5,8 +5,6 @@
  * Common module file.
  */
 
-use Drupal\monitoring_tool_client\Service\ModuleCollectorServiceInterface;
-
 /**
  * Implements hook_cron().
  */
@@ -16,22 +14,24 @@ function monitoring_tool_client_cron() {
   $request_time = \Drupal::time()->getRequestTime();
   $next_execution = $state_api->get('monitoring_tool_client.next_execution', 0);
 
-  // @TODO Need to change the condition to morning and lunch.
-  if ($request_time >= $next_execution) {
-    /** @var \Drupal\monitoring_tool_client\Service\ModuleCollectorServiceInterface $collector */
-    $collector = \Drupal::service('monitoring_tool_client.module_collector');
-    /** @var \Drupal\Core\Config\ImmutableConfig $setting */
-    $setting = \Drupal::configFactory()->get('monitoring_tool_client.settings');
+  if ($request_time < $next_execution) {
+    return;
+  }
 
-    $collector->resetCache();
+  // 21600 - it is 6h.
+  $state_api->set('monitoring_tool_client.next_execution', $request_time + 21600);
 
-    if ($setting->get('use_webhook') === FALSE) {
-      /** @var \Drupal\monitoring_tool_client\Service\ClientApiServiceInterface $client_api */
-      $client_api = \Drupal::service('monitoring_tool_client.client_api');
+  /** @var \Drupal\monitoring_tool_client\Service\ModuleCollectorServiceInterface $collector */
+  $collector = \Drupal::service('monitoring_tool_client.module_collector');
+  /** @var \Drupal\Core\Config\ImmutableConfig $setting */
+  $setting = \Drupal::configFactory()->get('monitoring_tool_client.settings');
 
-      $client_api->sendModules();
-    }
+  $collector->resetCache();
 
-    $state_api->set('monitoring_tool_client.next_execution', $request_time + ModuleCollectorServiceInterface::CACHE_EXPIRE_TIME);
+  if ($setting->get('use_webhook') === FALSE) {
+    /** @var \Drupal\monitoring_tool_client\Service\ClientApiServiceInterface $client_api */
+    $client_api = \Drupal::service('monitoring_tool_client.client_api');
+
+    $client_api->sendModules();
   }
 }

@@ -2,7 +2,6 @@
 
 namespace Drupal\monitoring_tool_client\Service;
 
-use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\Extension;
 use Drupal\Core\Extension\ModuleExtensionList;
@@ -27,52 +26,57 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
   protected $configFactory;
 
   /**
-   * Cache service.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
-   */
-  protected $cache;
-
-  /**
    * CollectModulesService constructor.
    *
    * @param \Drupal\Core\Extension\ModuleExtensionList $module_extension_list
    *   Module extensions service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   Configuration manager.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
-   *   Cache service.
    */
   public function __construct(
     ModuleExtensionList $module_extension_list,
-    ConfigFactoryInterface $config_factory,
-    CacheBackendInterface $cache
+    ConfigFactoryInterface $config_factory
   ) {
     $this->moduleExtensionList = $module_extension_list;
     $this->configFactory = $config_factory;
-    $this->cache = $cache;
   }
 
   /**
    * {@inheritdoc}
    */
   public function resetCache() {
-    $this->cache->delete(static::CACHE_CID);
+    $this->moduleExtensionList->reset();
   }
 
   /**
    * {@inheritdoc}
    */
   public function getModules() {
-    $cache = $this->cache->get(static::CACHE_CID);
+    $result = [];
+    $configuration = $this->configFactory->get('monitoring_tool_client.settings');
+    $weak_list = $configuration->get('weak_list');
+    /** @var \Drupal\Core\Extension\Extension[] $module_list */
+    $module_list = array_filter(
+      $this->moduleExtensionList->getList(),
+      [static::class, 'filterContribModules']
+    );
 
-    if ($cache) {
-      return $cache->data;
+    $result['drupal'] = [
+      'machine_name' => 'drupal',
+      'name' => 'Drupal core',
+      'version' => \Drupal::VERSION,
+      'weak_status' => !empty($weak_list['drupal']),
+    ];
+
+    foreach ($module_list as $module_name => $module) {
+      $info = isset($module->info) ? $module->info : [];
+      $result[$module_name] = [
+        'machine_name' => $module->getName(),
+        'name' => $info['name'],
+        'version' => $info['version'],
+        'weak_status' => !empty($weak_list[$module->getName()]),
+      ];
     }
-
-    $result = $this->collectModules();
-
-    $this->cache->set(static::CACHE_CID, $result, \Drupal::time()->getRequestTime() + static::CACHE_EXPIRE_TIME);
 
     return $result;
   }
@@ -104,42 +108,6 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
     }
 
     return FALSE;
-  }
-
-  /**
-   * Will collect all modules and Drupal core.
-   *
-   * @return array
-   *   Modules and core.
-   */
-  protected function collectModules() {
-    $result = [];
-    $configuration = $this->configFactory->get('monitoring_tool_client.settings');
-    $weak_list = $configuration->get('weak_list');
-    /** @var \Drupal\Core\Extension\Extension[] $module_list */
-    $module_list = array_filter(
-      $this->moduleExtensionList->reset()->getList(),
-      [static::class, 'filterContribModules']
-    );
-
-    $result['drupal'] = [
-      'machine_name' => 'drupal',
-      'name' => 'Drupal core',
-      'version' => \Drupal::VERSION,
-      'weak_status' => !empty($weak_list['drupal']),
-    ];
-
-    foreach ($module_list as $module_name => $module) {
-      $info = isset($module->info) ? $module->info : [];
-      $result[$module_name] = [
-        'machine_name' => $module->getName(),
-        'name' => $info['name'],
-        'version' => $info['version'],
-        'weak_status' => !empty($weak_list[$module->getName()]),
-      ];
-    }
-
-    return $result;
   }
 
 }

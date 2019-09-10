@@ -8,18 +8,6 @@ namespace Drupal\monitoring_tool_client\Service;
 interface ModuleCollectorServiceInterface {
 
   /**
-   * Cache ID.
-   */
-  const CACHE_CID = 'monitoring_tool_client.module_list';
-
-  /**
-   * Cache expire time.
-   *
-   * 21600 - it is 6h.
-   */
-  const CACHE_EXPIRE_TIME = 21600;
-
-  /**
    * Will rebuild list of modules.
    */
   public function resetCache();
