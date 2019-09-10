@@ -1,0 +1,209 @@
+<?php
+
+/**
+ * @file
+ * Monitoring tool client module.
+ */
+
+/**
+ * Key of variable with general settings.
+ */
+define('MONITORING_TOOL_CLIENT_CONFIG', 'monitoring_tool');
+
+/**
+ * Key of variable with general configuration.
+ */
+define('MONITORING_TOOL_CLIENT_SETTINGS', 'monitoring_tool_client.settings');
+
+/**
+ * Key of variable with time of the next execution.
+ */
+define('MONITORING_TOOL_CLIENT_NEXT_EXECUTION', 'monitoring_tool_client.next_execution');
+
+/**
+ * Cache ID.
+ */
+define('MONITORING_TOOL_CLIENT_CACHE_ID', 'monitoring_tool_client.module_list');
+
+/**
+ * Cache BIN.
+ */
+define('MONITORING_TOOL_CLIENT_CACHE_BIN', 'cache');
+
+/**
+ * Cache expire time.
+ *
+ * 21600 - it is 6h.
+ */
+define('MONITORING_TOOL_CLIENT_CACHE_EXPIRE_TIME', 21600);
+
+/**
+ * Monitoring tool server endpoint.
+ */
+define('MONITORING_TOOL_CLIENT_SERVER_ENDPOINT', '/monitoring-tool/input');
+
+/**
+ * Monitoring tool secure token.
+ */
+define('MONITORING_TOOL_CLIENT_SECURE_TOKEN', 'monitoring-tool-token');
+
+/**
+ * Implements hook_menu().
+ */
+function monitoring_tool_client_menu() {
+  $items = array();
+
+  $items['admin/config/services/monitoring-tool-client'] = array(
+    'title' => 'Client - Settings form',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('monitoring_tool_client_settings_form'),
+    'file' => 'monitoring_tool_client.admin.inc',
+    'access arguments' => array(
+      'monitoring tool client settings',
+    ),
+  );
+
+  $items['monitoring-tool-client/webhook'] = array(
+    'title' => 'Client - Settings form',
+    'page callback' => 'monitoring_tool_client_webhook',
+    'file' => 'monitoring_tool_client.webhook.inc',
+    'type' => MENU_CALLBACK,
+    'access arguments' => array(
+      'access content',
+    ),
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function monitoring_tool_client_permission() {
+  $items = array();
+
+  $items['monitoring tool client settings'] = array(
+    'title' => t('Configure Monitoring tool Client'),
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_cron().
+ */
+function monitoring_tool_client_cron() {
+  $next_execution = variable_get(MONITORING_TOOL_CLIENT_NEXT_EXECUTION, 0);
+  // @TODO Need to change the condition to morning and lunch.
+  if (REQUEST_TIME >= $next_execution) {
+    $config = variable_get(MONITORING_TOOL_CLIENT_SETTINGS);
+
+    cache_clear_all(MONITORING_TOOL_CLIENT_CACHE_ID, MONITORING_TOOL_CLIENT_CACHE_BIN);
+
+    if (!$config['use_webhook']) {
+      monitoring_tool_client_send_modules();
+    }
+
+    variable_set(
+      MONITORING_TOOL_CLIENT_NEXT_EXECUTION,
+      REQUEST_TIME + MONITORING_TOOL_CLIENT_CACHE_EXPIRE_TIME
+    );
+  }
+}
+
+/**
+ * Will filter all drupal core and custom modules or themes projects.
+ *
+ * It is callback of array_filter.
+ *
+ * @param object $module
+ *   Project data.
+ *
+ * @return bool
+ *   Filter value.
+ */
+function monitoring_tool_client_filter_contrib_projects($module) {
+  $info = isset($module->info) ? $module->info : [];
+
+  if (
+    isset($info['project']) &&
+    // Will ignore the drupal core modules.
+    $info['project'] !== 'drupal' &&
+    // Will ignore the modules that are located in the same folder.
+    $module->name === $info['project'] &&
+    // Will ignore the child modules.
+    basename(dirname($module->filename)) === $info['project']
+  ) {
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+/**
+ * Will return list of all modules and drupal core.
+ *
+ * @return array
+ *   List of modules and Drupal.
+ */
+function monitoring_tool_client_get_modules() {
+  $cache = cache_get(MONITORING_TOOL_CLIENT_CACHE_ID, MONITORING_TOOL_CLIENT_CACHE_BIN);
+
+  if ($cache !== FALSE) {
+    return $cache->data;
+  }
+
+  $result = array();
+  $config = variable_get(MONITORING_TOOL_CLIENT_SETTINGS);
+  $module_list = array_filter(
+    system_rebuild_module_data(),
+    'monitoring_tool_client_filter_contrib_projects'
+  );
+
+  $result['drupal'] = [
+    'machine_name' => 'drupal',
+    'name' => 'Drupal core',
+    'version' => VERSION,
+    'weak_status' => !empty($config['weak_list']['drupal']),
+  ];
+
+  foreach ($module_list as $module_name => $module_data) {
+    $info = isset($module_data->info) ? $module_data->info : [];
+
+    $result[$module_name] = array(
+      'machine_name' => $info['project'],
+      'name' => $info['name'],
+      'version' => $info['version'],
+      'weak_status' => !empty($config['weak_list'][$info['project']]),
+    );
+  }
+
+  cache_set(
+    MONITORING_TOOL_CLIENT_CACHE_ID,
+    $result,
+    MONITORING_TOOL_CLIENT_CACHE_BIN,
+    REQUEST_TIME + MONITORING_TOOL_CLIENT_CACHE_EXPIRE_TIME
+  );
+
+  return $result;
+}
+
+/**
+ * Will send the modules to monitoring tool server.
+ */
+function monitoring_tool_client_send_modules() {
+  $config = variable_get(MONITORING_TOOL_CLIENT_SETTINGS);
+  $setting = array_merge(array('headers' => array()), variable_get(MONITORING_TOOL_CLIENT_CONFIG));
+  $url = rtrim($setting['base_url'], '/') . MONITORING_TOOL_CLIENT_SERVER_ENDPOINT;
+  $options = array(
+    'headers' => array(
+      MONITORING_TOOL_CLIENT_SECURE_TOKEN => $config['secure_token'],
+    ) + $setting['headers'],
+    'method' => 'POST',
+    'data' => drupal_json_encode(array(
+      'modules' => monitoring_tool_client_get_modules(),
+    )),
+  );
+
+  drupal_http_request($url, $options);
+}

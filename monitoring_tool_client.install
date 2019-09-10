@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * @file
+ * Install module file.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function monitoring_tool_client_install() {
+  variable_set(MONITORING_TOOL_CLIENT_SETTINGS, array(
+    'secure_token' => '',
+    'use_webhook' => TRUE,
+    'weak_list' => array(),
+  ));
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function monitoring_tool_client_uninstall() {
+  variable_del(MONITORING_TOOL_CLIENT_SETTINGS);
+  variable_del(MONITORING_TOOL_CLIENT_NEXT_EXECUTION);
+  variable_del(MONITORING_TOOL_CLIENT_CONFIG);
+}
