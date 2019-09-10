@@ -1,0 +1,15 @@
+monitoring_tool_client.settings:
+  type: config_object
+  label: 'Monitoring tool Client settings'
+  mapping:
+    secure_token:
+      type: string
+      label: 'Secure token'
+    use_webhook:
+      type: boolean
+      label: 'Use WebHook'
+    weak_list:
+      type: sequence
+      label: 'Weak list'
+      sequence:
+        type: string
