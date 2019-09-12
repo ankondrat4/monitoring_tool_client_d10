@@ -8,9 +8,9 @@ namespace Drupal\monitoring_tool_client\Service;
 interface ServerConnectorServiceInterface {
 
   /**
-   * Endpoint of the Monitoring Tool server.
+   * Monitoring Tool server API version.
    */
-  const MONITORING_TOOL_ENDPOINT = '/monitoring-tool/input';
+  const MONITORING_TOOL_API_VERSION = 'v1';
 
   /**
    * HTTP header access token name.

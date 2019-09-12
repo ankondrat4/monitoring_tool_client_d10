@@ -74,11 +74,14 @@ class WebHookController implements ContainerInjectionInterface {
   /**
    * WebHook route callback.
    *
+   * @param string $project_id
+   *   The project ID from Monitoring tool Server.
+   *
    * @return \Symfony\Component\HttpFoundation\Response
    *   Http response.
    */
-  public function sendModules() {
-    $this->checkAccess();
+  public function sendModules($project_id) {
+    $this->checkAccess($project_id);
 
     try {
       $this->clientApi->sendModules();
@@ -96,17 +99,25 @@ class WebHookController implements ContainerInjectionInterface {
   /**
    * Checking of the access by header Token.
    *
+   * @param string $project_id
+   *   The project ID from Monitoring tool Server.
+   *
    * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
    * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
    */
-  private function checkAccess() {
+  private function checkAccess($project_id) {
     $request = $this->request();
     $config = $this->configFactory->get('monitoring_tool_client.settings');
+    $secure_token = $request->headers->has(ServerConnectorServiceInterface::MONITORING_TOOL_ACCESS_HEADER)
+      ? $request->headers->get(ServerConnectorServiceInterface::MONITORING_TOOL_ACCESS_HEADER)
+      : '';
 
     if (
-        $config->get('use_webhook') === FALSE ||
-        $request->headers->has(ServerConnectorServiceInterface::MONITORING_TOOL_ACCESS_HEADER) === FALSE ||
-        $config->get('secure_token') !== $request->headers->get(ServerConnectorServiceInterface::MONITORING_TOOL_ACCESS_HEADER)
+      $config->get('use_webhook') === FALSE ||
+      empty($project_id) === TRUE ||
+      empty($secure_token) === TRUE ||
+      $project_id !== $config->get('project_id') ||
+      $secure_token !== $config->get('secure_token')
     ) {
       throw new AccessDeniedHttpException();
     }
