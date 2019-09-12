@@ -7,7 +7,7 @@ monitoring_tool_client.settings_form:
     _permission: 'monitoring tool client settings'
 
 monitoring_tool_client.webhook.http:
-  path: '/monitoring-tool-client/webhook'
+  path: '/monitoring-tool/{project_id}/webhook'
   defaults:
     _controller: '\Drupal\monitoring_tool_client\Controller\WebHookController::sendModules'
   methods: [GET]
