@@ -56,6 +56,16 @@ class SettingsForm extends FormBase {
       '#title' => $this->t('Security'),
     ];
 
+    $form['security']['project_id'] = [
+      '#type' => 'textfield',
+      '#parents' => ['project_id'],
+      '#title' => $this->t('Project ID'),
+      '#default_value' => $config->get('project_id'),
+      '#attributes' => [
+        'autocomplete' => 'off',
+      ],
+    ];
+
     $form['security']['token'] = [
       '#type' => 'textfield',
       '#parents' => ['secure_token'],

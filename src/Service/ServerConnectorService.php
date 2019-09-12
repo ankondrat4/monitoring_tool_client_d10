@@ -55,7 +55,9 @@ class ServerConnectorService implements ServerConnectorServiceInterface {
    */
   public function send(array $data) {
     if (!empty($this->settings['base_url'])) {
-      $url = rtrim($this->settings['base_url'], '/') . static::MONITORING_TOOL_ENDPOINT;
+      $config = $this->configFactory->get('monitoring_tool_client.settings');
+      $url = rtrim($this->settings['base_url'], '/');
+      $url .= '/monitoring-tool/api/' . static::MONITORING_TOOL_API_VERSION . '/' . $config->get('project_id') . '/input';
       $options = [
         RequestOptions::JSON => $data,
       ] + $this->settings['options'] + [
@@ -64,7 +66,6 @@ class ServerConnectorService implements ServerConnectorServiceInterface {
         RequestOptions::HTTP_ERRORS => FALSE,
         RequestOptions::HEADERS => [],
       ];
-      $config = $this->configFactory->get('monitoring_tool_client.settings');
       $options[RequestOptions::HEADERS][static::MONITORING_TOOL_ACCESS_HEADER] = $config->get('secure_token');
 
       $this->httpClient->request('POST', $url, $options);
