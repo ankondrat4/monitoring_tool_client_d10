@@ -26,6 +26,16 @@ function monitoring_tool_client_settings_form(array $form, array &$form_state) {
     '#title' => t('Security'),
   );
 
+  $form['security']['project_id'] = array(
+    '#type' => 'textfield',
+    '#parents' => array('project_id'),
+    '#title' => t('Project ID'),
+    '#default_value' => $config['project_id'],
+    '#attributes' => array(
+      'autocomplete' => 'off',
+    ),
+  );
+
   $form['security']['token'] = array(
     '#type' => 'textfield',
     '#parents' => array('secure_token'),

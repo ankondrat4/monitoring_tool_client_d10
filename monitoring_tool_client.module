@@ -38,9 +38,9 @@ define('MONITORING_TOOL_CLIENT_CACHE_BIN', 'cache');
 define('MONITORING_TOOL_CLIENT_CACHE_EXPIRE_TIME', 21600);
 
 /**
- * Monitoring tool server endpoint.
+ * Monitoring Tool server API version.
  */
-define('MONITORING_TOOL_CLIENT_SERVER_ENDPOINT', '/monitoring-tool/input');
+define('MONITORING_TOOL_CLIENT_API_VERSION', 'v1');
 
 /**
  * Monitoring tool secure token.
@@ -54,7 +54,8 @@ function monitoring_tool_client_menu() {
   $items = array();
 
   $items['admin/config/services/monitoring-tool-client'] = array(
-    'title' => 'Client - Settings form',
+    'title' => 'Monitoring tool: Client',
+    'description' => 'Monitoring tool: Client - settings form',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('monitoring_tool_client_settings_form'),
     'file' => 'monitoring_tool_client.admin.inc',
@@ -63,9 +64,10 @@ function monitoring_tool_client_menu() {
     ),
   );
 
-  $items['monitoring-tool-client/webhook'] = array(
+  $items['monitoring-tool/%/webhook'] = array(
     'title' => 'Client - Settings form',
     'page callback' => 'monitoring_tool_client_webhook',
+    'page arguments' => array(1),
     'file' => 'monitoring_tool_client.webhook.inc',
     'type' => MENU_CALLBACK,
     'access arguments' => array(
@@ -94,20 +96,22 @@ function monitoring_tool_client_permission() {
  */
 function monitoring_tool_client_cron() {
   $next_execution = variable_get(MONITORING_TOOL_CLIENT_NEXT_EXECUTION, 0);
-  // @TODO Need to change the condition to morning and lunch.
-  if (REQUEST_TIME >= $next_execution) {
-    $config = variable_get(MONITORING_TOOL_CLIENT_SETTINGS);
 
-    cache_clear_all(MONITORING_TOOL_CLIENT_CACHE_ID, MONITORING_TOOL_CLIENT_CACHE_BIN);
+  if (REQUEST_TIME < $next_execution) {
+    return;
+  }
 
-    if (!$config['use_webhook']) {
-      monitoring_tool_client_send_modules();
-    }
+  variable_set(
+    MONITORING_TOOL_CLIENT_NEXT_EXECUTION,
+    REQUEST_TIME + MONITORING_TOOL_CLIENT_CACHE_EXPIRE_TIME
+  );
 
-    variable_set(
-      MONITORING_TOOL_CLIENT_NEXT_EXECUTION,
-      REQUEST_TIME + MONITORING_TOOL_CLIENT_CACHE_EXPIRE_TIME
-    );
+  $config = variable_get(MONITORING_TOOL_CLIENT_SETTINGS);
+
+  cache_clear_all(MONITORING_TOOL_CLIENT_CACHE_ID, MONITORING_TOOL_CLIENT_CACHE_BIN);
+
+  if (!$config['use_webhook']) {
+    monitoring_tool_client_send_modules();
   }
 }
 
@@ -194,7 +198,9 @@ function monitoring_tool_client_get_modules() {
 function monitoring_tool_client_send_modules() {
   $config = variable_get(MONITORING_TOOL_CLIENT_SETTINGS);
   $setting = array_merge(array('headers' => array()), variable_get(MONITORING_TOOL_CLIENT_CONFIG));
-  $url = rtrim($setting['base_url'], '/') . MONITORING_TOOL_CLIENT_SERVER_ENDPOINT;
+  $url = rtrim($setting['base_url'], '/');
+  $url .= '/monitoring-tool/api/' . MONITORING_TOOL_CLIENT_API_VERSION . '/' . $config['project_id'] . '/input';
+
   $options = array(
     'headers' => array(
       MONITORING_TOOL_CLIENT_SECURE_TOKEN => $config['secure_token'],
