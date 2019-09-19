@@ -64,18 +64,16 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
     $result['drupal'] = [
       'machine_name' => 'drupal',
       'name' => 'Drupal core',
-      'version' => \Drupal::VERSION,
       'weak_status' => !empty($weak_list['drupal']),
-    ];
+    ] + static::parseVersion(\Drupal::VERSION);
 
     foreach ($module_list as $module_name => $module) {
       $info = isset($module->info) ? $module->info : [];
       $result[$module_name] = [
         'machine_name' => $module->getName(),
         'name' => $info['name'],
-        'version' => $info['version'],
         'weak_status' => !empty($weak_list[$module->getName()]),
-      ];
+      ] + static::parseVersion($info['version']);
     }
 
     return $result;
@@ -108,6 +106,37 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
     }
 
     return FALSE;
+  }
+
+  /**
+   * Will parse the version of modules or drupal core.
+   *
+   * @param string $version
+   *   Version of a module or Drupal core.
+   *
+   * @return array
+   *   Array of major, minor, patch and extra values.
+   */
+  protected static function parseVersion($version) {
+    $output = [
+      'core' => \Drupal::CORE_COMPATIBILITY,
+      'version_major' => NULL,
+      'version_minor' => NULL,
+      'version_patch' => NULL,
+      'version_extra' => NULL,
+    ];
+
+    if (preg_match('/^(?:\d+\.x-)?(\d+)(?:\.(\d+))?\.(\d+|x)(?:-(\w+))?$/i', $version, $matches)) {
+      array_shift($matches);
+      list(
+        $output['version_major'],
+        $output['version_minor'],
+        $output['version_patch'],
+        $output['version_extra']
+      ) = $matches + [1 => NULL, 2 => NULL, 3 => NULL, 4 => NULL];
+    }
+
+    return $output;
   }
 
 }
