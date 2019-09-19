@@ -104,6 +104,7 @@ function monitoring_tool_client_settings_form_submit(array $form, array $form_st
   form_state_values_clean($form_state);
 
   variable_set(MONITORING_TOOL_CLIENT_SETTINGS, $form_state['values']);
+  cache_clear_all(MONITORING_TOOL_CLIENT_CACHE_ID, MONITORING_TOOL_CLIENT_CACHE_BIN);
 
   drupal_set_message(t('The configuration options have been saved.'));
 }
