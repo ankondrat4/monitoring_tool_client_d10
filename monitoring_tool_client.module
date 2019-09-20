@@ -21,23 +21,6 @@ define('MONITORING_TOOL_CLIENT_SETTINGS', 'monitoring_tool_client.settings');
 define('MONITORING_TOOL_CLIENT_NEXT_EXECUTION', 'monitoring_tool_client.next_execution');
 
 /**
- * Cache ID.
- */
-define('MONITORING_TOOL_CLIENT_CACHE_ID', 'monitoring_tool_client.module_list');
-
-/**
- * Cache BIN.
- */
-define('MONITORING_TOOL_CLIENT_CACHE_BIN', 'cache');
-
-/**
- * Cache expire time.
- *
- * 21600 - it is 6h.
- */
-define('MONITORING_TOOL_CLIENT_CACHE_EXPIRE_TIME', 21600);
-
-/**
  * Monitoring Tool server API version.
  */
 define('MONITORING_TOOL_CLIENT_API_VERSION', 'v1');
@@ -96,23 +79,23 @@ function monitoring_tool_client_permission() {
  */
 function monitoring_tool_client_cron() {
   $next_execution = variable_get(MONITORING_TOOL_CLIENT_NEXT_EXECUTION, 0);
+  $config = variable_get(MONITORING_TOOL_CLIENT_SETTINGS);
 
-  if (REQUEST_TIME < $next_execution) {
+  if (
+    !empty($config['use_webhook']) ||
+    empty($config['project_id']) ||
+    empty($config['secure_token']) ||
+    REQUEST_TIME < $next_execution
+  ) {
     return;
   }
 
   variable_set(
     MONITORING_TOOL_CLIENT_NEXT_EXECUTION,
-    REQUEST_TIME + MONITORING_TOOL_CLIENT_CACHE_EXPIRE_TIME
+    REQUEST_TIME + $config['report_interval']
   );
 
-  $config = variable_get(MONITORING_TOOL_CLIENT_SETTINGS);
-
-  cache_clear_all(MONITORING_TOOL_CLIENT_CACHE_ID, MONITORING_TOOL_CLIENT_CACHE_BIN);
-
-  if (!$config['use_webhook']) {
-    monitoring_tool_client_send_modules();
-  }
+  monitoring_tool_client_send_modules();
 }
 
 /**
@@ -151,14 +134,9 @@ function monitoring_tool_client_filter_contrib_projects($module) {
  *   List of modules and Drupal.
  */
 function monitoring_tool_client_get_modules() {
-  $cache = cache_get(MONITORING_TOOL_CLIENT_CACHE_ID, MONITORING_TOOL_CLIENT_CACHE_BIN);
-
-  if ($cache !== FALSE) {
-    return $cache->data;
-  }
-
   $result = array();
   $config = variable_get(MONITORING_TOOL_CLIENT_SETTINGS);
+  $module_enabled_list = system_list('module_enabled');
   $module_list = array_filter(
     system_rebuild_module_data(),
     'monitoring_tool_client_filter_contrib_projects'
@@ -167,24 +145,22 @@ function monitoring_tool_client_get_modules() {
   $result['drupal'] = [
     'machine_name' => 'drupal',
     'name' => 'Drupal core',
+    'core' => DRUPAL_CORE_COMPATIBILITY,
+    'version' => VERSION,
     'weak_status' => !empty($config['weak_list']['drupal']),
-  ] + parseVersion(VERSION);
+  ];
 
   foreach ($module_list as $module_name => $module_data) {
     $info = isset($module_data->info) ? $module_data->info : [];
     $result[$module_name] = array(
       'machine_name' => $info['project'],
       'name' => $info['name'],
+      'core' => DRUPAL_CORE_COMPATIBILITY,
+      'version' => $info['version'],
+      'status' => !empty($module_enabled_list[$info['project']]),
       'weak_status' => !empty($config['weak_list'][$info['project']]),
-    ) + parseVersion($info['version']);
+    );
   }
-
-  cache_set(
-    MONITORING_TOOL_CLIENT_CACHE_ID,
-    $result,
-    MONITORING_TOOL_CLIENT_CACHE_BIN,
-    REQUEST_TIME + MONITORING_TOOL_CLIENT_CACHE_EXPIRE_TIME
-  );
 
   return $result;
 }
@@ -209,35 +185,4 @@ function monitoring_tool_client_send_modules() {
   );
 
   drupal_http_request($url, $options);
-}
-
-/**
- * Will parse the version of modules or drupal core.
- *
- * @param string $version
- *   Version of a module or Drupal core.
- *
- * @return array
- *   Array of major, minor, patch and extra values.
- */
-function parseVersion($version) {
-  $output = array(
-    'core' => DRUPAL_CORE_COMPATIBILITY,
-    'version_major' => NULL,
-    'version_minor' => NULL,
-    'version_patch' => NULL,
-    'version_extra' => NULL,
-  );
-
-  if (preg_match('/^(?:\d+\.x-)?(\d+)(?:\.(\d+))?\.(\d+|x)(?:-(\w+))?$/i', $version, $matches)) {
-    array_shift($matches);
-    list(
-      $output['version_major'],
-      $output['version_minor'],
-      $output['version_patch'],
-      $output['version_extra']
-      ) = $matches + [1 => NULL, 2 => NULL, 3 => NULL, 4 => NULL];
-  }
-
-  return $output;
 }
