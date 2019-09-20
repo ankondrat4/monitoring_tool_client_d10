@@ -18,15 +18,12 @@
  */
 function monitoring_tool_client_settings_form(array $form, array &$form_state) {
   $config = variable_get(MONITORING_TOOL_CLIENT_SETTINGS);
-  $period = drupal_map_assoc(array(3600, 10800, 21600, 32400, 43200, 86400), 'format_interval');
-  $period[0] = t('Cron execution');
-  ksort($period);
 
   form_load_include($form_state, 'inc', 'monitoring_tool_client', 'admin');
 
   $form['general'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Common'),
+    '#title' => t('General'),
   );
 
   $form['general']['use_webhook'] = array(
@@ -42,7 +39,15 @@ function monitoring_tool_client_settings_form(array $form, array &$form_state) {
     '#title' => t('Send the report'),
     '#description' => t('How often need to send the report'),
     '#default_value' => $config['report_interval'],
-    '#options' => $period,
+    '#options' => array(
+      0 => t('Cron execution'),
+      3600 => t('1 hour'),
+      10800 => t('3 hours'),
+      21600 => t('6 hours'),
+      32400 => t('9 hours'),
+      43200 => t('12 hours'),
+      86400 => t('1 day'),
+    ),
     '#states' => array(
       'visible' => array(
         ':input[name="use_webhook"]' => array(
