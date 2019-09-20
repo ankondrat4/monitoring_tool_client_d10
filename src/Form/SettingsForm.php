@@ -51,6 +51,42 @@ class SettingsForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('monitoring_tool_client.settings');
 
+    $form['general'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('General'),
+    ];
+
+    $form['general']['use_webhook'] = [
+      '#type' => 'checkbox',
+      '#parents' => ['use_webhook'],
+      '#title' => $this->t('Use WebHook'),
+      '#default_value' => $config->get('use_webhook'),
+    ];
+
+    $form['general']['report_interval'] = [
+      '#type' => 'select',
+      '#parents' => ['send_report_time'],
+      '#title' => $this->t('Send the report'),
+      '#description' => $this->t('How often need to send the report'),
+      '#default_value' => $config->get('report_interval'),
+      '#options' => [
+        0 => $this->t('Cron execution'),
+        3600 => $this->t('1 hour'),
+        10800 => $this->t('3 hours'),
+        21600 => $this->t('6 hours'),
+        32400 => $this->t('9 hours'),
+        43200 => $this->t('12 hours'),
+        86400 => $this->t('1 day'),
+      ],
+      '#states' => [
+        'visible' => [
+          ':input[name="use_webhook"]' => [
+            'checked' => FALSE,
+          ],
+        ],
+      ],
+    ];
+
     $form['security'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Security'),
@@ -75,18 +111,6 @@ class SettingsForm extends FormBase {
       '#attributes' => [
         'autocomplete' => 'off',
       ],
-    ];
-
-    $form['general'] = [
-      '#type' => 'fieldset',
-      '#title' => $this->t('Common'),
-    ];
-
-    $form['general']['use_webhook'] = [
-      '#type' => 'checkbox',
-      '#parents' => ['use_webhook'],
-      '#title' => $this->t('Use WebHook'),
-      '#default_value' => $config->get('use_webhook'),
     ];
 
     $form['weak'] = [

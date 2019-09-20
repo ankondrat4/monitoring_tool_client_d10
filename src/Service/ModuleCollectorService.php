@@ -5,6 +5,7 @@ namespace Drupal\monitoring_tool_client\Service;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\Extension;
 use Drupal\Core\Extension\ModuleExtensionList;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 
 /**
  * Class ModuleCollectorService.
@@ -26,26 +27,30 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
   protected $configFactory;
 
   /**
+   * The module handler service.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $moduleHandler;
+
+  /**
    * CollectModulesService constructor.
    *
    * @param \Drupal\Core\Extension\ModuleExtensionList $module_extension_list
    *   Module extensions service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   Configuration manager.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler service.
    */
   public function __construct(
     ModuleExtensionList $module_extension_list,
-    ConfigFactoryInterface $config_factory
+    ConfigFactoryInterface $config_factory,
+    ModuleHandlerInterface $module_handler
   ) {
     $this->moduleExtensionList = $module_extension_list;
     $this->configFactory = $config_factory;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function resetCache() {
-    $this->moduleExtensionList->reset();
+    $this->moduleHandler = $module_handler;
   }
 
   /**
@@ -57,23 +62,28 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
     $weak_list = $configuration->get('weak_list');
     /** @var \Drupal\Core\Extension\Extension[] $module_list */
     $module_list = array_filter(
-      $this->moduleExtensionList->getList(),
+      $this->moduleExtensionList->reset()->getList(),
       [static::class, 'filterContribModules']
     );
 
     $result['drupal'] = [
       'machine_name' => 'drupal',
       'name' => 'Drupal core',
+      'core' => \Drupal::CORE_COMPATIBILITY,
+      'version' => \Drupal::VERSION,
       'weak_status' => !empty($weak_list['drupal']),
-    ] + static::parseVersion(\Drupal::VERSION);
+    ];
 
     foreach ($module_list as $module_name => $module) {
       $info = isset($module->info) ? $module->info : [];
       $result[$module_name] = [
         'machine_name' => $module->getName(),
         'name' => $info['name'],
+        'core' => \Drupal::CORE_COMPATIBILITY,
+        'version' => $info['version'],
+        'status' => $this->moduleHandler->moduleExists($module->getName()),
         'weak_status' => !empty($weak_list[$module->getName()]),
-      ] + static::parseVersion($info['version']);
+      ];
     }
 
     return $result;
@@ -106,37 +116,6 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
     }
 
     return FALSE;
-  }
-
-  /**
-   * Will parse the version of modules or drupal core.
-   *
-   * @param string $version
-   *   Version of a module or Drupal core.
-   *
-   * @return array
-   *   Array of major, minor, patch and extra values.
-   */
-  protected static function parseVersion($version) {
-    $output = [
-      'core' => \Drupal::CORE_COMPATIBILITY,
-      'version_major' => NULL,
-      'version_minor' => NULL,
-      'version_patch' => NULL,
-      'version_extra' => NULL,
-    ];
-
-    if (preg_match('/^(?:\d+\.x-)?(\d+)(?:\.(\d+))?\.(\d+|x)(?:-(\w+))?$/i', $version, $matches)) {
-      array_shift($matches);
-      list(
-        $output['version_major'],
-        $output['version_minor'],
-        $output['version_patch'],
-        $output['version_extra']
-      ) = $matches + [1 => NULL, 2 => NULL, 3 => NULL, 4 => NULL];
-    }
-
-    return $output;
   }
 
 }

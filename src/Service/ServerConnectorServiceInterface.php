@@ -22,8 +22,6 @@ interface ServerConnectorServiceInterface {
    *
    * @param array $data
    *   Data for sending to Monitoring Tool server.
-   *
-   * @throws \GuzzleHttp\Exception\GuzzleException
    */
   public function send(array $data);
 
