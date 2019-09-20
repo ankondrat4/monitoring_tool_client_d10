@@ -11,6 +11,9 @@ monitoring_tool_client.settings:
     use_webhook:
       type: boolean
       label: 'Use WebHook'
+    report_interval:
+      type: integer
+      label: 'How often need to send the report'
     weak_list:
       type: sequence
       label: 'Weak list'

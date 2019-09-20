@@ -6,6 +6,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Site\Settings;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\RequestOptions;
+use GuzzleHttp\Exception\GuzzleException;
 
 /**
  * Class ServerConnectorService.
@@ -68,7 +69,11 @@ class ServerConnectorService implements ServerConnectorServiceInterface {
       ];
       $options[RequestOptions::HEADERS][static::MONITORING_TOOL_ACCESS_HEADER] = $config->get('secure_token');
 
-      $this->httpClient->request('POST', $url, $options);
+      try {
+        $this->httpClient->request('POST', $url, $options);
+      } catch (GuzzleException $exception) {
+        watchdog_exception('monitoring_tool_client', $exception);
+      }
     }
   }
 

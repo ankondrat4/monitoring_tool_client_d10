@@ -8,11 +8,6 @@ namespace Drupal\monitoring_tool_client\Service;
 interface ModuleCollectorServiceInterface {
 
   /**
-   * Will rebuild list of modules.
-   */
-  public function resetCache();
-
-  /**
    * Will return list of all modules and drupal core.
    *
    * @return array
