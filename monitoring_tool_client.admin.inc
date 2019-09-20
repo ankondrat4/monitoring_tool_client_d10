@@ -18,8 +18,39 @@
  */
 function monitoring_tool_client_settings_form(array $form, array &$form_state) {
   $config = variable_get(MONITORING_TOOL_CLIENT_SETTINGS);
+  $period = drupal_map_assoc(array(3600, 10800, 21600, 32400, 43200, 86400), 'format_interval');
+  $period[0] = t('Cron execution');
+  ksort($period);
 
   form_load_include($form_state, 'inc', 'monitoring_tool_client', 'admin');
+
+  $form['general'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Common'),
+  );
+
+  $form['general']['use_webhook'] = array(
+    '#type' => 'checkbox',
+    '#parents' => array('use_webhook'),
+    '#title' => t('Use WebHook'),
+    '#default_value' => $config['use_webhook'],
+  );
+
+  $form['general']['report_interval'] = array(
+    '#type' => 'select',
+    '#parents' => array('send_report_time'),
+    '#title' => t('Send the report'),
+    '#description' => t('How often need to send the report'),
+    '#default_value' => $config['report_interval'],
+    '#options' => $period,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="use_webhook"]' => array(
+          'checked' => FALSE,
+        ),
+      ),
+    ),
+  );
 
   $form['security'] = array(
     '#type' => 'fieldset',
@@ -45,18 +76,6 @@ function monitoring_tool_client_settings_form(array $form, array &$form_state) {
     '#attributes' => array(
       'autocomplete' => 'off',
     ),
-  );
-
-  $form['general'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Common'),
-  );
-
-  $form['general']['use_webhook'] = array(
-    '#type' => 'checkbox',
-    '#parents' => array('use_webhook'),
-    '#title' => t('Use WebHook'),
-    '#default_value' => $config['use_webhook'],
   );
 
   $form['weak'] = array(
@@ -102,9 +121,6 @@ function monitoring_tool_client_settings_form(array $form, array &$form_state) {
  */
 function monitoring_tool_client_settings_form_submit(array $form, array $form_state) {
   form_state_values_clean($form_state);
-
   variable_set(MONITORING_TOOL_CLIENT_SETTINGS, $form_state['values']);
-  cache_clear_all(MONITORING_TOOL_CLIENT_CACHE_ID, MONITORING_TOOL_CLIENT_CACHE_BIN);
-
   drupal_set_message(t('The configuration options have been saved.'));
 }
