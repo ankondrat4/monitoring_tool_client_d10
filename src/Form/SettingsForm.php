@@ -65,7 +65,7 @@ class SettingsForm extends FormBase {
 
     $form['general']['report_interval'] = [
       '#type' => 'select',
-      '#parents' => ['send_report_time'],
+      '#parents' => ['report_interval'],
       '#title' => $this->t('Send the report'),
       '#description' => $this->t('How often need to send the report'),
       '#default_value' => $config->get('report_interval'),
