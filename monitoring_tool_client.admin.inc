@@ -35,7 +35,7 @@ function monitoring_tool_client_settings_form(array $form, array &$form_state) {
 
   $form['general']['report_interval'] = array(
     '#type' => 'select',
-    '#parents' => array('send_report_time'),
+    '#parents' => array('report_interval'),
     '#title' => t('Send the report'),
     '#description' => t('How often need to send the report'),
     '#default_value' => $config['report_interval'],
