@@ -2,6 +2,7 @@
 
 namespace Drupal\monitoring_tool_client\Controller;
 
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\monitoring_tool_client\Service\ClientApiServiceInterface;
@@ -10,7 +11,6 @@ use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
@@ -81,8 +81,6 @@ class WebHookController implements ContainerInjectionInterface {
    *   Http response.
    */
   public function sendModules($project_id) {
-    $this->checkAccess($project_id);
-
     try {
       $this->clientApi->sendModules();
     }
@@ -105,22 +103,20 @@ class WebHookController implements ContainerInjectionInterface {
    * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
    * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
    */
-  private function checkAccess($project_id) {
+  public function checkAccess($project_id) {
     $request = $this->request();
     $config = $this->configFactory->get('monitoring_tool_client.settings');
     $secure_token = $request->headers->has(ServerConnectorServiceInterface::MONITORING_TOOL_ACCESS_HEADER)
       ? $request->headers->get(ServerConnectorServiceInterface::MONITORING_TOOL_ACCESS_HEADER)
       : '';
 
-    if (
+    return AccessResult::forbiddenIf(
       $config->get('use_webhook') === FALSE ||
       empty($project_id) === TRUE ||
       empty($secure_token) === TRUE ||
       $project_id !== $config->get('project_id') ||
       $secure_token !== $config->get('secure_token')
-    ) {
-      throw new AccessDeniedHttpException();
-    }
+    );
   }
 
   /**
