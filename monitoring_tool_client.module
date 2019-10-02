@@ -147,6 +147,7 @@ function monitoring_tool_client_get_modules() {
     'name' => 'Drupal core',
     'core' => DRUPAL_CORE_COMPATIBILITY,
     'version' => VERSION,
+    'status' => TRUE,
     'weak_status' => !empty($config['weak_list']['drupal']),
   ];
 
