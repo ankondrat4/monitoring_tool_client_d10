@@ -100,8 +100,8 @@ class WebHookController implements ContainerInjectionInterface {
    * @param string $project_id
    *   The project ID from Monitoring tool Server.
    *
-   * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
-   * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
+   *  @return \Drupal\Core\Access\AccessResultInterface
+   *   The access result.
    */
   public function checkAccess($project_id) {
     $request = $this->request();
