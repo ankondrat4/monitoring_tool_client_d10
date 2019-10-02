@@ -70,6 +70,7 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
       'machine_name' => 'drupal',
       'name' => 'Drupal core',
       'core' => \Drupal::CORE_COMPATIBILITY,
+      'status' => TRUE,
       'version' => \Drupal::VERSION,
       'weak_status' => !empty($weak_list['drupal']),
     ];
