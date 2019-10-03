@@ -16,9 +16,9 @@ define('MONITORING_TOOL_CLIENT_CONFIG', 'monitoring_tool');
 define('MONITORING_TOOL_CLIENT_SETTINGS', 'monitoring_tool_client.settings');
 
 /**
- * Key of variable with time of the next execution.
+ * Key of variable with time of the last execution.
  */
-define('MONITORING_TOOL_CLIENT_NEXT_EXECUTION', 'monitoring_tool_client.next_execution');
+define('MONITORING_TOOL_CLIENT_LAST_EXECUTION', 'monitoring_tool_client.last_execution');
 
 /**
  * Monitoring Tool server API version.
@@ -78,24 +78,21 @@ function monitoring_tool_client_permission() {
  * Implements hook_cron().
  */
 function monitoring_tool_client_cron() {
-  $next_execution = variable_get(MONITORING_TOOL_CLIENT_NEXT_EXECUTION, 0);
+  $last_execution = variable_get(MONITORING_TOOL_CLIENT_LAST_EXECUTION, 0);
   $config = variable_get(MONITORING_TOOL_CLIENT_SETTINGS);
 
   if (
-    !empty($config['use_webhook']) ||
-    empty($config['project_id']) ||
-    empty($config['secure_token']) ||
-    REQUEST_TIME < $next_execution
+    empty($config['use_webhook']) &&
+    !empty($config['project_id']) &&
+    !empty($config['secure_token']) &&
+    REQUEST_TIME > $last_execution + $config['report_interval']
   ) {
-    return;
+    monitoring_tool_client_send_modules();
+    variable_set(
+      MONITORING_TOOL_CLIENT_LAST_EXECUTION,
+      REQUEST_TIME
+    );
   }
-
-  variable_set(
-    MONITORING_TOOL_CLIENT_NEXT_EXECUTION,
-    REQUEST_TIME + $config['report_interval']
-  );
-
-  monitoring_tool_client_send_modules();
 }
 
 /**

@@ -17,12 +17,3 @@ function monitoring_tool_client_install() {
     'weak_list' => array(),
   ));
 }
-
-/**
- * Implements hook_uninstall().
- */
-function monitoring_tool_client_uninstall() {
-  variable_del(MONITORING_TOOL_CLIENT_SETTINGS);
-  variable_del(MONITORING_TOOL_CLIENT_NEXT_EXECUTION);
-  variable_del(MONITORING_TOOL_CLIENT_CONFIG);
-}
