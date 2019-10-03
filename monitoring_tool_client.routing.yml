@@ -15,3 +15,13 @@ monitoring_tool_client.webhook.http:
     _custom_access: '\Drupal\monitoring_tool_client\Controller\WebHookController::checkAccess'
   options:
     no_cache: TRUE
+
+monitoring_tool_client.test_connection:
+  path: '/monitoring-tool/test-connection'
+  defaults:
+    _controller: '\Drupal\monitoring_tool_client\Controller\TestConnection::testConnection'
+  methods: [GET]
+  requirements:
+    _custom_access: '\Drupal\monitoring_tool_client\Controller\TestConnection::checkAccess'
+  options:
+    no_cache: TRUE
