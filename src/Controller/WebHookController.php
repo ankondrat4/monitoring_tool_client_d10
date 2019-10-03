@@ -11,7 +11,6 @@ use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
@@ -122,19 +121,11 @@ class WebHookController implements ContainerInjectionInterface {
   /**
    * Will return the Request.
    *
-   * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
-   *
    * @return \Symfony\Component\HttpFoundation\Request
    *   Http request.
    */
   private function request() {
-    $request = $this->requestStack->getCurrentRequest();
-
-    if ($request === NULL) {
-      throw new BadRequestHttpException();
-    }
-
-    return $request;
+    return $this->requestStack->getCurrentRequest();
   }
 
 }

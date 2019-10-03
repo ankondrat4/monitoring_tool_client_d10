@@ -9,5 +9,5 @@
  * Implements hook_uninstall().
  */
 function monitoring_tool_client_uninstall() {
-  \Drupal::state()->delete('monitoring_tool_client.next_execution');
+  \Drupal::state()->delete('monitoring_tool_client.last_execution');
 }
