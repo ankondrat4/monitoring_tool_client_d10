@@ -8,14 +8,14 @@ monitoring_tool_client.settings:
     secure_token:
       type: string
       label: 'Secure token'
-    use_webhook:
+    webhook:
       type: boolean
       label: 'Use WebHook'
     report_interval:
       type: integer
       label: 'How often need to send the report'
-    weak_list:
+    skip_updates:
       type: sequence
-      label: 'Weak list'
+      label: 'Skip of checking updates'
       sequence:
         type: string
