@@ -82,7 +82,7 @@ function monitoring_tool_client_cron() {
   $config = variable_get(MONITORING_TOOL_CLIENT_SETTINGS);
 
   if (
-    empty($config['use_webhook']) &&
+    empty($config['webhook']) &&
     !empty($config['project_id']) &&
     !empty($config['secure_token']) &&
     REQUEST_TIME > $last_execution + $config['report_interval']
@@ -145,7 +145,7 @@ function monitoring_tool_client_get_modules() {
     'core' => DRUPAL_CORE_COMPATIBILITY,
     'version' => VERSION,
     'status' => TRUE,
-    'weak_status' => !empty($config['weak_list']['drupal']),
+    'skip_updates' => !empty($config['skip_updates']['drupal']),
   ];
 
   foreach ($module_list as $module_name => $module_data) {
@@ -156,7 +156,7 @@ function monitoring_tool_client_get_modules() {
       'core' => DRUPAL_CORE_COMPATIBILITY,
       'version' => $info['version'],
       'status' => !empty($module_enabled_list[$info['project']]),
-      'weak_status' => !empty($config['weak_list'][$info['project']]),
+      'skip_updates' => !empty($config['skip_updates'][$info['project']]),
     );
   }
 
