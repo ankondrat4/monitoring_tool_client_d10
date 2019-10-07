@@ -12,8 +12,8 @@ function monitoring_tool_client_install() {
   variable_set(MONITORING_TOOL_CLIENT_SETTINGS, array(
     'project_id' => '',
     'secure_token' => '',
-    'use_webhook' => TRUE,
+    'webhook' => TRUE,
     'report_interval' => 0,
-    'weak_list' => array(),
+    'skip_updates' => array(),
   ));
 }

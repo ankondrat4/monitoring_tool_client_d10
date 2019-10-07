@@ -26,21 +26,22 @@ function monitoring_tool_client_settings_form(array $form, array &$form_state) {
     '#title' => t('General'),
   );
 
-  $form['general']['use_webhook'] = array(
+  $form['general']['webhook'] = array(
     '#type' => 'checkbox',
-    '#parents' => array('use_webhook'),
-    '#title' => t('Use WebHook'),
-    '#default_value' => $config['use_webhook'],
+    '#parents' => array('webhook'),
+    '#title' => t('Wait for webhook'),
+    '#description' => t('<b>Important!</b> The report will be sent after triggering via webhook from central server. <br> Uncheck the checkbox in case if the project is Application or don\'t have public www address.'),
+    '#default_value' => $config['webhook'],
   );
 
   $form['general']['report_interval'] = array(
     '#type' => 'select',
     '#parents' => array('report_interval'),
     '#title' => t('Send the report'),
-    '#description' => t('How often need to send the report'),
+    '#description' => t('How often need to send the report to server.'),
     '#default_value' => $config['report_interval'],
     '#options' => array(
-      0 => t('Cron execution'),
+      0 => t('Each cron execution'),
       3600 => t('1 hour'),
       10800 => t('3 hours'),
       21600 => t('6 hours'),
@@ -50,7 +51,7 @@ function monitoring_tool_client_settings_form(array $form, array &$form_state) {
     ),
     '#states' => array(
       'visible' => array(
-        ':input[name="use_webhook"]' => array(
+        ':input[name="webhook"]' => array(
           'checked' => FALSE,
         ),
       ),
@@ -66,6 +67,7 @@ function monitoring_tool_client_settings_form(array $form, array &$form_state) {
     '#type' => 'textfield',
     '#parents' => array('project_id'),
     '#title' => t('Project ID'),
+    '#description' => t('This is hash ID you can take from central server system.<br> On the project edit page.'),
     '#default_value' => $config['project_id'],
     '#attributes' => array(
       'autocomplete' => 'off',
@@ -76,6 +78,7 @@ function monitoring_tool_client_settings_form(array $form, array &$form_state) {
     '#type' => 'textfield',
     '#parents' => array('secure_token'),
     '#title' => t('Secure token'),
+    '#description' => t('This token you can take from central server system.<br> On the project edit page.'),
     '#default_value' => $config['secure_token'],
     '#size' => 120,
     '#attributes' => array(
@@ -83,9 +86,10 @@ function monitoring_tool_client_settings_form(array $form, array &$form_state) {
     ),
   );
 
-  $form['weak'] = array(
+  $form['skip_checking_updates'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Weak list'),
+    '#title' => t('Skip of checking updates'),
+    '#description' => t('All selected modules will be ignored on time checking updates. <br> This modules are modules with some additional custom solutions or have a lot of patches.'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
@@ -96,11 +100,12 @@ function monitoring_tool_client_settings_form(array $form, array &$form_state) {
     $modules_options[$machine_name] = $info['name'];
   }
 
-  $form['weak']['modules'] = array(
+  $form['skip_checking_updates']['skip_updates'] = array(
     '#type' => 'checkboxes',
-    '#parents' => array('weak_list'),
-    '#title' => t('List of week modules'),
-    '#default_value' => $config['weak_list'],
+    '#parents' => array('skip_updates'),
+    '#title' => t('List of installed contrib modules'),
+    '#description' => t('Select the modules that should be ignored on time checking updates.'),
+    '#default_value' => $config['skip_updates'],
     '#options' => $modules_options,
   );
 

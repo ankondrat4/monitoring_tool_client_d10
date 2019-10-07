@@ -21,7 +21,7 @@ function monitoring_tool_client_webhook($project_id) {
     $config['secure_token'] === '' ||
     $project_id !== $config['project_id'] ||
     $secure_token !== $config['secure_token'] ||
-    !$config['use_webhook']
+    !$config['webhook']
   ) {
     drupal_access_denied();
     drupal_exit();

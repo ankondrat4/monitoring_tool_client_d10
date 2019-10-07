@@ -1,5 +1,5 @@
-name = Monitoring tool client
-description = Monitoring tool client
+name = Monitoring tool Client
+description = Will collect and send report about the system structure.
 core = 7.x
 package = Web services
 configure = /admin/config/services/monitoring-tool-client
