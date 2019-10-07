@@ -110,7 +110,7 @@ class WebHookController implements ContainerInjectionInterface {
       : '';
 
     return AccessResult::forbiddenIf(
-      $config->get('use_webhook') === FALSE ||
+      $config->get('webhook') === FALSE ||
       empty($project_id) === TRUE ||
       empty($secure_token) === TRUE ||
       $project_id !== $config->get('project_id') ||

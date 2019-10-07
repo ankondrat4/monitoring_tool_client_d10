@@ -17,7 +17,7 @@ function monitoring_tool_client_cron() {
   $last_execution = $state_api->get('monitoring_tool_client.last_execution', 0);
 
   if (
-    $config->get('use_webhook') === FALSE &&
+    $config->get('webhook') === FALSE &&
     !empty($config->get('project_id')) &&
     !empty($config->get('secure_token')) &&
     $request_time > $last_execution + $config->get('report_interval')

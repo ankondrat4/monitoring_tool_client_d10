@@ -59,7 +59,7 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
   public function getModules() {
     $result = [];
     $configuration = $this->configFactory->get('monitoring_tool_client.settings');
-    $weak_list = $configuration->get('weak_list');
+    $skip_list = $configuration->get('skip_updates');
     /** @var \Drupal\Core\Extension\Extension[] $module_list */
     $module_list = array_filter(
       $this->moduleExtensionList->reset()->getList(),
@@ -72,7 +72,7 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
       'core' => \Drupal::CORE_COMPATIBILITY,
       'status' => TRUE,
       'version' => \Drupal::VERSION,
-      'weak_status' => !empty($weak_list['drupal']),
+      'skip_updates' => !empty($skip_list['drupal']),
     ];
 
     foreach ($module_list as $module_name => $module) {
@@ -83,7 +83,7 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
         'core' => \Drupal::CORE_COMPATIBILITY,
         'version' => $info['version'],
         'status' => $this->moduleHandler->moduleExists($module->getName()),
-        'weak_status' => !empty($weak_list[$module->getName()]),
+        'skip_updates' => !empty($skip_list[$module->getName()]),
       ];
     }
 
