@@ -1,6 +1,6 @@
 project_id: ''
 secure_token: ''
-use_webhook: true
+webhook: true
 report_interval: 0
-weak_list: {  }
+skip_updates: {  }
 langcode: en
