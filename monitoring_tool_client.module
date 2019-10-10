@@ -145,7 +145,7 @@ function monitoring_tool_client_get_modules() {
     'core' => DRUPAL_CORE_COMPATIBILITY,
     'version' => VERSION,
     'status' => TRUE,
-    'skip_updates' => !empty($config['skip_updates']['drupal']),
+    'skip_updates' => FALSE,
   ];
 
   foreach ($module_list as $module_name => $module_data) {

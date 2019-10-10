@@ -100,6 +100,8 @@ function monitoring_tool_client_settings_form(array $form, array &$form_state) {
     $modules_options[$machine_name] = $info['name'];
   }
 
+  unset($modules_options['drupal']);
+
   $form['skip_checking_updates']['skip_updates'] = array(
     '#type' => 'checkboxes',
     '#parents' => array('skip_updates'),
