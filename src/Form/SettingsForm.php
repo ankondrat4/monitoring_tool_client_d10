@@ -123,17 +123,21 @@ class SettingsForm extends FormBase {
       '#open' => FALSE,
     ];
 
+    $skip_updates_options = array_column(
+      $this->moduleCollector->getModules(),
+      'name',
+      'machine_name'
+    );
+
+    unset($skip_updates_options['drupal']);
+
     $form['skip_checking_updates']['skip_updates'] = [
       '#type' => 'checkboxes',
       '#parents' => ['skip_updates'],
       '#title' => $this->t('List of installed contrib modules'),
       '#description' => $this->t('Select the modules that should be ignored on time checking updates.'),
       '#default_value' => $config->get('skip_updates'),
-      '#options' => array_column(
-        $this->moduleCollector->getModules(),
-        'name',
-        'machine_name'
-      ),
+      '#options' => $skip_updates_options,
     ];
 
     $form['actions'] = [
