@@ -72,7 +72,7 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
       'core' => \Drupal::CORE_COMPATIBILITY,
       'status' => TRUE,
       'version' => \Drupal::VERSION,
-      'skip_updates' => !empty($skip_list['drupal']),
+      'skip_updates' => FALSE,
     ];
 
     foreach ($module_list as $module_name => $module) {
