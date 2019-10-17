@@ -2,11 +2,10 @@
 
 namespace Drupal\monitoring_tool_client\Controller;
 
-use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\monitoring_tool_client\Functional\AccessCheckTrait;
 use Drupal\monitoring_tool_client\Service\ClientApiServiceInterface;
-use Drupal\monitoring_tool_client\Service\ServerConnectorServiceInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -18,19 +17,7 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
  */
 class WebHookController implements ContainerInjectionInterface {
 
-  /**
-   * Config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * Request stack.
-   *
-   * @var \Symfony\Component\HttpFoundation\RequestStack
-   */
-  protected $requestStack;
+  use AccessCheckTrait;
 
   /**
    * Monitoring tool client API.
@@ -91,41 +78,6 @@ class WebHookController implements ContainerInjectionInterface {
     }
 
     return new Response(NULL, Response::HTTP_NO_CONTENT);
-  }
-
-  /**
-   * Checking of the access by header Token.
-   *
-   * @param string $project_id
-   *   The project ID from Monitoring tool Server.
-   *
-   *  @return \Drupal\Core\Access\AccessResultInterface
-   *   The access result.
-   */
-  public function checkAccess($project_id) {
-    $request = $this->request();
-    $config = $this->configFactory->get('monitoring_tool_client.settings');
-    $secure_token = $request->headers->has(ServerConnectorServiceInterface::MONITORING_TOOL_ACCESS_HEADER)
-      ? $request->headers->get(ServerConnectorServiceInterface::MONITORING_TOOL_ACCESS_HEADER)
-      : '';
-
-    return AccessResult::forbiddenIf(
-      $config->get('webhook') === FALSE ||
-      empty($project_id) === TRUE ||
-      empty($secure_token) === TRUE ||
-      $project_id !== $config->get('project_id') ||
-      $secure_token !== $config->get('secure_token')
-    );
-  }
-
-  /**
-   * Will return the Request.
-   *
-   * @return \Symfony\Component\HttpFoundation\Request
-   *   Http request.
-   */
-  private function request() {
-    return $this->requestStack->getCurrentRequest();
   }
 
 }
