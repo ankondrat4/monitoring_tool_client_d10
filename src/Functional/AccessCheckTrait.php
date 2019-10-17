@@ -30,7 +30,7 @@ trait AccessCheckTrait {
    * @param string $project_id
    *   The project ID from Monitoring tool Server.
    *
-   *  @return \Drupal\Core\Access\AccessResultInterface
+   * @return \Drupal\Core\Access\AccessResultInterface
    *   The access result.
    */
   public function checkAccess($project_id) {
