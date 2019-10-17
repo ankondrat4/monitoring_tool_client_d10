@@ -4,20 +4,12 @@ namespace Drupal\monitoring_tool_client\Service;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\Extension;
-use Drupal\Core\Extension\ModuleExtensionList;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 
 /**
  * Class ModuleCollectorService.
  */
 class ModuleCollectorService implements ModuleCollectorServiceInterface {
-
-  /**
-   * Module extensions service.
-   *
-   * @var \Drupal\Core\Extension\ModuleExtensionList
-   */
-  protected $moduleExtensionList;
 
   /**
    * Configuration manager.
@@ -36,19 +28,15 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
   /**
    * CollectModulesService constructor.
    *
-   * @param \Drupal\Core\Extension\ModuleExtensionList $module_extension_list
-   *   Module extensions service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   Configuration manager.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler service.
    */
   public function __construct(
-    ModuleExtensionList $module_extension_list,
     ConfigFactoryInterface $config_factory,
     ModuleHandlerInterface $module_handler
   ) {
-    $this->moduleExtensionList = $module_extension_list;
     $this->configFactory = $config_factory;
     $this->moduleHandler = $module_handler;
   }
@@ -62,7 +50,8 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
     $skip_list = $configuration->get('skip_updates');
     /** @var \Drupal\Core\Extension\Extension[] $module_list */
     $module_list = array_filter(
-      $this->moduleExtensionList->reset()->getList(),
+      // The "extension.list.module" service is not supported for < Drupal 8.6.
+      system_rebuild_module_data(),
       [static::class, 'filterContribModules']
     );
 
