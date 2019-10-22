@@ -86,6 +86,19 @@ function monitoring_tool_client_settings_form(array $form, array &$form_state) {
     ),
   );
 
+  $form['security']['check_connection'] = [
+    '#type' => 'container',
+    '#attributes' => array('class' => array('check-connection-wrapper')),
+  ];
+
+  $form['security']['check_connection']['check'] = array(
+    '#type' => 'button',
+    '#value' => t('Checking connection to server'),
+    '#ajax' => array(
+      'callback' => 'monitoring_tool_client_update_checking_connection',
+    ),
+  );
+
   $form['skip_checking_updates'] = array(
     '#type' => 'fieldset',
     '#title' => t('Skip of checking updates'),
@@ -119,6 +132,50 @@ function monitoring_tool_client_settings_form(array $form, array &$form_state) {
   );
 
   return $form;
+}
+
+/**
+ * Callback of checking connection of settings_form.
+ *
+ * @param array $form
+ *   Drupal form.
+ * @param array $form_state
+ *   Drupal form state.
+ *
+ * @return array
+ *   Ajax commands.
+ */
+function monitoring_tool_client_update_checking_connection(array $form, array $form_state) {
+  $commands = array();
+
+  $result = monitoring_tool_client_server_connector('GET', [], 'test');
+
+  switch (TRUE) {
+    case $result->code === 0:
+      $color = 'red';
+      $message = $result->error;
+      break;
+
+    case $result->code > 199 && $result->code < 300:
+      $color = 'green';
+      $message = "Connection status: {$result->code}";
+      break;
+
+    default:
+      $color = 'red';
+      $message = 'Status: ' . $result->code . ' ';
+      break;
+  }
+
+  $form['security']['check_connection'][] = array(
+    '#type' => 'container',
+    '#attributes' => array('style' => array("color: $color; padding: 10px 0 0;")),
+    array('#markup' => $message)
+  );
+
+  $commands[] = ajax_command_replace('.check-connection-wrapper', render($form['security']['check_connection']));
+
+  return array('#type' => 'ajax', '#commands' => $commands);
 }
 
 /**
