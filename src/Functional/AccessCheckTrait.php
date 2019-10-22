@@ -3,7 +3,9 @@
 namespace Drupal\monitoring_tool_client\Functional;
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\monitoring_tool_client\Service\ServerConnectorServiceInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Trait AccessCheckTrait.
@@ -27,61 +29,47 @@ trait AccessCheckTrait {
   /**
    * Checking of the access by header Token.
    *
-   * @param string $project_id
+   * @param string $project_hash
    *   The project ID from Monitoring tool Server.
    *
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access result.
    */
-  public function checkAccess($project_id) {
-    $config = $this->getConfigFactory()->get('monitoring_tool_client.settings');
-    $secure_token = $this->getCurrentRequest()->headers->get(ServerConnectorServiceInterface::MONITORING_TOOL_ACCESS_HEADER);
+  public function checkAccess($project_hash) {
+    $config = $this->configFactory->get('monitoring_tool_client.settings');
+    $secure_token = $this->requestStack->getCurrentRequest()->headers->get(ServerConnectorServiceInterface::MONITORING_TOOL_ACCESS_HEADER);
 
-    return AccessResult::allowedIf(
+    if (
       $config->get('webhook') === TRUE &&
-      !empty($project_id) &&
+      !empty($project_hash) &&
       !empty($secure_token) &&
-      $project_id === $config->get('project_id') &&
+      $project_hash === $config->get('project_id') &&
       $secure_token === $config->get('secure_token')
-    );
+    ) {
+      return AccessResult::allowed();
+    }
+
+    return AccessResult::forbidden();
   }
 
   /**
-   * Will return the Request.
+   * Will set the request stack.
    *
-   * @return \Symfony\Component\HttpFoundation\Request
-   *   Http request.
-   */
-  protected function getCurrentRequest() {
-    return $this->getRequestStack()->getCurrentRequest();
-  }
-
-  /**
-   * Will return the request stack.
-   *
-   * @return \Symfony\Component\HttpFoundation\RequestStack
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
    */
-  protected function getRequestStack() {
-    if (empty($this->requestStack)) {
-      $this->requestStack = \Drupal::service('request_stack');
-    }
-
-    return $this->requestStack;
+  protected function setRequestStack(RequestStack $request_stack) {
+    $this->requestStack = $request_stack;
   }
 
   /**
-   * Will return the config factory.
+   * Will set the config factory.
    *
-   * @return \Drupal\Core\Config\ConfigFactoryInterface
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
    */
-  protected function getConfigFactory() {
-    if (empty($this->configFactory)) {
-      $this->configFactory = \Drupal::service('config.factory');
-    }
-
-    return $this->configFactory;
+  protected function setConfigFactory(ConfigFactoryInterface $config_factory) {
+    $this->configFactory = $config_factory;
   }
 
 }

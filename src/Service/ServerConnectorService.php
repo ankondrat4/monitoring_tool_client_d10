@@ -2,6 +2,7 @@
 
 namespace Drupal\monitoring_tool_client\Service;
 
+use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Site\Settings;
 use GuzzleHttp\ClientInterface;
@@ -54,27 +55,33 @@ class ServerConnectorService implements ServerConnectorServiceInterface {
   /**
    * {@inheritdoc}
    */
-  public function send(array $data) {
+  public function send(array $data, $method = 'POST', $action = 'input') {
     if (!empty($this->settings['base_url'])) {
       $config = $this->configFactory->get('monitoring_tool_client.settings');
       $url = rtrim($this->settings['base_url'], '/');
-      $url .= '/monitoring-tool/api/' . static::MONITORING_TOOL_API_VERSION . '/' . $config->get('project_id') . '/input';
-      $options = [
-        RequestOptions::JSON => $data,
-      ] + $this->settings['options'] + [
+      $url .= '/monitoring-tool/api/' . static::MONITORING_TOOL_API_VERSION . '/' . $config->get('project_id') . '/' . $action;
+      $default_options = [
+        RequestOptions::JSON => !empty($data) ? $data : NULL,
+        RequestOptions::QUERY => [
+          'time' => time(),
+        ],
         RequestOptions::ALLOW_REDIRECTS => TRUE,
         RequestOptions::VERIFY => FALSE,
         RequestOptions::HTTP_ERRORS => FALSE,
-        RequestOptions::HEADERS => [],
+        RequestOptions::HEADERS => [
+          static::MONITORING_TOOL_ACCESS_HEADER => $config->get('secure_token'),
+        ],
       ];
-      $options[RequestOptions::HEADERS][static::MONITORING_TOOL_ACCESS_HEADER] = $config->get('secure_token');
+      $options = NestedArray::mergeDeep($default_options, $this->settings['options']);
 
       try {
-        $this->httpClient->request('POST', $url, $options);
+        return $this->httpClient->request($method, $url, $options);
       } catch (GuzzleException $exception) {
         watchdog_exception('monitoring_tool_client', $exception);
       }
     }
+
+    return NULL;
   }
 
 }
