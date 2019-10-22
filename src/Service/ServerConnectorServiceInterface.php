@@ -22,7 +22,14 @@ interface ServerConnectorServiceInterface {
    *
    * @param array $data
    *   Data for sending to Monitoring Tool server.
+   * @param string $method
+   *   HTTP Method.
+   * @param string $action
+   *   Action hook.
+   *
+   * @return \Psr\Http\Message\ResponseInterface|null
+   *   Guzzle response.
    */
-  public function send(array $data);
+  public function send(array $data, $method = 'POST', $action = 'input');
 
 }

@@ -41,8 +41,8 @@ class WebHookController implements ContainerInjectionInterface {
     RequestStack $request_stack,
     ClientApiServiceInterface $client_api
   ) {
-    $this->configFactory = $config_factory;
-    $this->requestStack = $request_stack;
+    $this->setConfigFactory($config_factory);
+    $this->setRequestStack($request_stack);
     $this->clientApi = $client_api;
   }
 
@@ -60,13 +60,13 @@ class WebHookController implements ContainerInjectionInterface {
   /**
    * WebHook route callback.
    *
-   * @param string $project_id
+   * @param string $project_hash
    *   The project ID from Monitoring tool Server.
    *
    * @return \Symfony\Component\HttpFoundation\Response
    *   Http response.
    */
-  public function sendModules($project_id) {
+  public function sendModules($project_hash) {
     try {
       $this->clientApi->sendModules();
     }

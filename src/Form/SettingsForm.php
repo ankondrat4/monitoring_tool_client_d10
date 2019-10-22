@@ -2,10 +2,15 @@
 
 namespace Drupal\monitoring_tool_client\Form;
 
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\monitoring_tool_client\Service\ModuleCollectorServiceInterface;
+use Drupal\monitoring_tool_client\Service\ServerConnectorServiceInterface;
+use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Class SettingsForm.
@@ -13,7 +18,14 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class SettingsForm extends FormBase {
 
   /**
-   * Service module collector.
+   * Connector service, will send data to monitoring tool server.
+   *
+   * @var \Drupal\monitoring_tool_client\Service\ServerConnectorServiceInterface
+   */
+  protected $serverConnector;
+
+  /**
+   * Will gets the list of contribution modules.
    *
    * @var \Drupal\monitoring_tool_client\Service\ModuleCollectorServiceInterface
    */
@@ -22,10 +34,16 @@ class SettingsForm extends FormBase {
   /**
    * SettingsForm constructor.
    *
+   * @param \Drupal\monitoring_tool_client\Service\ServerConnectorServiceInterface $server_connector
+   *   Connector service, will send data to monitoring tool server.
    * @param \Drupal\monitoring_tool_client\Service\ModuleCollectorServiceInterface $module_collector
-   *   Service module collector.
+   *   Will gets the list of contribution modules.
    */
-  public function __construct(ModuleCollectorServiceInterface $module_collector) {
+  public function __construct(
+    ServerConnectorServiceInterface $server_connector,
+    ModuleCollectorServiceInterface $module_collector
+  ) {
+    $this->serverConnector = $server_connector;
     $this->moduleCollector = $module_collector;
   }
 
@@ -34,6 +52,7 @@ class SettingsForm extends FormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
+      $container->get('monitoring_tool_client.server_connector'),
       $container->get('monitoring_tool_client.module_collector')
     );
   }
@@ -116,6 +135,19 @@ class SettingsForm extends FormBase {
       ],
     ];
 
+    $form['security']['check_connection'] = [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['check-connection-wrapper']],
+    ];
+
+    $form['security']['check_connection']['check'] = [
+      '#type' => 'button',
+      '#value' => $this->t('Checking connection to server'),
+      '#ajax' => [
+        'callback' => [$this, 'updateCheckingConnection'],
+      ],
+    ];
+
     $form['skip_checking_updates'] = [
       '#type' => 'details',
       '#title' => $this->t('Skip of checking updates'),
@@ -150,6 +182,54 @@ class SettingsForm extends FormBase {
     ];
 
     return $form;
+  }
+
+  /**
+   * Callback of update CheckingConnection field.
+   *
+   * @param array $form
+   *   Drupal form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Drupal form state.
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   Current request.
+   *
+   * @return \Symfony\Component\HttpFoundation\Response
+   *   Ajax commands.
+   */
+  public function updateCheckingConnection(array &$form, FormStateInterface &$form_state, Request $request) {
+    $response = new AjaxResponse();
+    $result = $this->serverConnector->send([], 'GET', 'test');
+
+    switch (TRUE) {
+      case !($result instanceof ResponseInterface):
+        $color = 'red';
+        $message = 'This site can’t be reached';
+        break;
+
+      case $result->getStatusCode() > 199 && $result->getStatusCode() < 300:
+        $color = 'green';
+        $message = "Connection status: {$result->getStatusCode()}  {$result->getReasonPhrase()}";
+        break;
+
+      default:
+        $color = 'red';
+        $message = 'Status: ' . $result->getStatusCode() . ' ' . $result->getReasonPhrase();
+        break;
+    }
+
+    $form['security']['check_connection'][] = [
+      '#type' => 'container',
+      '#attributes' => ['style' => ["color: $color; padding: 10px 0 0;"]],
+      '#markup' => $message,
+    ];
+
+    $response->addCommand(new ReplaceCommand(
+      '.check-connection-wrapper',
+      $form['security']['check_connection']
+    ));
+
+    return $response;
   }
 
   /**
