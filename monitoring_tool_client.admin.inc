@@ -146,9 +146,17 @@ function monitoring_tool_client_settings_form(array $form, array &$form_state) {
  *   Ajax commands.
  */
 function monitoring_tool_client_update_checking_connection(array $form, array $form_state) {
+  global $conf;
   $commands = array();
 
+  form_state_values_clean($form_state);
+
+  $previous_values = $conf['monitoring_tool_client.settings'];
+  $conf['monitoring_tool_client.settings'] = $form_state['values'];
+
   $result = monitoring_tool_client_server_connector('GET', [], 'test');
+
+  $conf['monitoring_tool_client.settings'] = $previous_values;
 
   switch (TRUE) {
     case $result->code === 0:
@@ -169,13 +177,16 @@ function monitoring_tool_client_update_checking_connection(array $form, array $f
 
   $form['security']['check_connection'][] = array(
     '#type' => 'container',
-    '#attributes' => array('style' => array("color: $color; padding: 10px 0 0;")),
+    '#attributes' => array('style' => array("color: $color;")),
     array('#markup' => $message)
   );
 
   $commands[] = ajax_command_replace('.check-connection-wrapper', render($form['security']['check_connection']));
 
-  return array('#type' => 'ajax', '#commands' => $commands);
+  return array(
+    '#type' => 'ajax',
+    '#commands' => $commands,
+  );
 }
 
 /**
