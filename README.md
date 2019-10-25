@@ -7,10 +7,10 @@ These are the steps you need to take in order to use this software.
 $settings['monitoring_tool'] = [
   'base_url' => 'http://example.com',
   'options' => [
+  'auth' => ['username', 'password'],
     'headers' => [
       'X-Foo' => 'overwrite',
-      'verify' => true,
-      'auth' => ['username', 'password'],
+      'verify' => true,    
     ],
   ],
 ];
