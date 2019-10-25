@@ -57,7 +57,7 @@ class ServerConnectorService implements ServerConnectorServiceInterface {
    */
   public function send(array $data, $method = 'POST', $action = 'input') {
     if (!empty($this->settings['base_url'])) {
-      $config = $this->configFactory->get('monitoring_tool_client.settings');
+      $config = $this->configFactory->getEditable('monitoring_tool_client.settings');
       $url = rtrim($this->settings['base_url'], '/');
       $url .= '/monitoring-tool/api/' . static::MONITORING_TOOL_API_VERSION . '/' . $config->get('project_id') . '/' . $action;
       $default_options = [
