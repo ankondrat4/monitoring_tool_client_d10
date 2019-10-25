@@ -47,15 +47,24 @@ function monitoring_tool_client_menu() {
     ),
   );
 
-  $items['monitoring-tool/%/webhook'] = array(
-    'title' => 'Client - Settings form',
+  $items['monitoring-tool/api/v1/%/webhook'] = array(
+    'title' => 'Webhook callback',
     'page callback' => 'monitoring_tool_client_webhook',
-    'page arguments' => array(1),
+    'page arguments' => array(3),
     'file' => 'monitoring_tool_client.webhook.inc',
     'type' => MENU_CALLBACK,
-    'access arguments' => array(
-      'access content',
-    ),
+    'access callback' => 'monitoring_tool_client_check_access',
+    'access arguments' => array(3),
+  );
+
+  $items['monitoring-tool/api/v1/%/test'] = array(
+    'title' => 'Connection test',
+    'page callback' => 'monitoring_tool_client_connection_test',
+    'page arguments' => array(),
+    'file' => 'monitoring_tool_client.connection_test.inc',
+    'type' => MENU_CALLBACK,
+    'access callback' => 'monitoring_tool_client_check_access',
+    'access arguments' => array(3),
   );
 
   return $items;
@@ -167,20 +176,64 @@ function monitoring_tool_client_get_modules() {
  * Will send the modules to monitoring tool server.
  */
 function monitoring_tool_client_send_modules() {
+  monitoring_tool_client_server_connector('POST', array(
+    'modules' => monitoring_tool_client_get_modules(),
+  ));
+}
+
+/**
+ * Will send data to server.
+ *
+ * @param string $method
+ *   HTTP method.
+ * @param array $data
+ *   Array data to send.
+ * @param string $action
+ *   Type of the action.
+ *
+ * @return object
+ *   Response object.
+ */
+function monitoring_tool_client_server_connector($method = 'POST', array $data = array(), $action = 'input') {
   $config = variable_get(MONITORING_TOOL_CLIENT_SETTINGS);
   $setting = array_merge(array('headers' => array()), variable_get(MONITORING_TOOL_CLIENT_CONFIG));
   $url = rtrim($setting['base_url'], '/');
-  $url .= '/monitoring-tool/api/' . MONITORING_TOOL_CLIENT_API_VERSION . '/' . $config['project_id'] . '/input';
+  $url .= '/monitoring-tool/api/' . MONITORING_TOOL_CLIENT_API_VERSION . '/' . $config['project_id'] . '/' . $action;
 
   $options = array(
     'headers' => array(
-      MONITORING_TOOL_CLIENT_SECURE_TOKEN => $config['secure_token'],
-    ) + $setting['headers'],
-    'method' => 'POST',
-    'data' => drupal_json_encode(array(
-      'modules' => monitoring_tool_client_get_modules(),
-    )),
+        MONITORING_TOOL_CLIENT_SECURE_TOKEN => $config['secure_token'],
+      ) + $setting['headers'],
+    'method' => $method,
+    'data' => $data ? drupal_json_encode($data) : NULL,
   );
 
-  drupal_http_request($url, $options);
+  return drupal_http_request($url, $options);
+}
+
+/**
+ * Will check access to the project.
+ *
+ * @param $project_hash
+ *   Project hash ID.
+ *
+ * @return bool
+ *   Access boolean value.
+ */
+function monitoring_tool_client_check_access($project_hash) {
+  $config = variable_get(MONITORING_TOOL_CLIENT_SETTINGS);
+  $secure_token_key = 'HTTP_' . strtoupper(str_replace('-', '_', MONITORING_TOOL_CLIENT_SECURE_TOKEN));
+  $secure_token = isset($_SERVER[$secure_token_key]) ? $_SERVER[$secure_token_key] : '';
+
+  if (
+    $config['webhook'] &&
+    $config['project_id'] !== '' &&
+    $config['secure_token'] !== '' &&
+    $project_hash === $config['project_id'] &&
+    $secure_token === $config['secure_token']
+  ) {
+    return TRUE;
+  }
+
+  return FALSE;
 }
