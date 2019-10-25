@@ -199,6 +199,11 @@ class SettingsForm extends FormBase {
    */
   public function updateCheckingConnection(array &$form, FormStateInterface &$form_state, Request $request) {
     $response = new AjaxResponse();
+
+    $form_state->cleanValues();
+    $this->configFactory()
+      ->getEditable('monitoring_tool_client.settings')
+      ->setSettingsOverride($form_state->getValues());
     $result = $this->serverConnector->send([], 'GET', 'test');
 
     switch (TRUE) {
@@ -220,7 +225,7 @@ class SettingsForm extends FormBase {
 
     $form['security']['check_connection'][] = [
       '#type' => 'container',
-      '#attributes' => ['style' => ["color: $color; padding: 10px 0 0;"]],
+      '#attributes' => ['style' => ["color: $color;"]],
       '#markup' => $message,
     ];
 
