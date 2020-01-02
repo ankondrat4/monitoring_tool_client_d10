@@ -2,7 +2,7 @@
 
 These are the steps you need to take in order to use this software.
 
- 1. Install dependencies with composer. Run ```composer require 'adyax_support/monitoring_tool_client:^1.0'```
+ 1. Install dependencies with composer. Run ```composer require 'adyax_support/monitoring_tool_client:^8.1.0'```
  2. Edit settings.php to configure the server, add these settings there:
 ```php
 $settings['monitoring_tool'] = [
