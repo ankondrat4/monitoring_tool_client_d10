@@ -13,6 +13,6 @@ $conf['monitoring_tool'] = [
 ];
 ```
 More information about options you can read
-here: http://docs.guzzlephp.org/en/stable/request-options.html.
+here: https://api.drupal.org/api/drupal/includes!common.inc/function/drupal_http_request/7.x
 
 Then configure the settings on the page: /admin/config/services/monitoring-tool-client.
