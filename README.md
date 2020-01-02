@@ -2,7 +2,8 @@
 
 These are the steps you need to take in order to use this software.
 
- 1. Edit settings.php to configure the server, add these settings there:
+ 1. Install dependencies with composer. Run ```composer require 'adyax_support/monitoring_tool_client:^8.1.0'```
+ 2. Edit settings.php to configure the server, add these settings there:
 ```php
 $settings['monitoring_tool'] = [
   'base_url' => 'http://example.com',
@@ -10,13 +11,12 @@ $settings['monitoring_tool'] = [
   'auth' => ['username', 'password'],
     'headers' => [
       'X-Foo' => 'overwrite',
-      'verify' => true,    
+      'verify' => true,
     ],
   ],
 ];
 ```
-More information about options you can read here:
-http://docs.guzzlephp.org/en/stable/request-options.html
- 
- 2. Then configure the settings on this page:
-    /admin/config/services/monitoring-tool-client.
+More information about options you can read
+here: http://docs.guzzlephp.org/en/stable/request-options.html.
+
+Then configure the settings on the page: /admin/config/services/monitoring-tool-client.
