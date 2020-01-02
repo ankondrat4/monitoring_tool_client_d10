@@ -1,0 +1,22 @@
+{
+    "name": "adyax_support/monitoring_tool_client",
+    "description": "The module provides a monitoring tool for the client-side.",
+    "type": "drupal-module",
+    "keywords": ["Monitoring Tool Client", "Monitoring Tool", "Drupal", "Drupal 8", "Adyax"],
+    "homepage": "https://github.com/adyax/monitoring_tool_client",
+    "support": {
+      "source": "https://github.com/adyax/monitoring_tool_client"
+    },
+    "license": "GPL-2.0+",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://packages.drupal.org/8"
+        }
+    ],
+    "require": {
+      "drupal/core": "~8.0"
+    }
+}
