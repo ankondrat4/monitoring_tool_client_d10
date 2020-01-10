@@ -40,7 +40,7 @@ class ClientApiService implements ClientApiServiceInterface {
   /**
    * {@inheritdoc}
    */
-  public function sendModules() {
+  public function sendRequest() {
     return $this->serverConnector->send([
       'modules' => $this->moduleCollector->getModules(),
     ]);

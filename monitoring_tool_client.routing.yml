@@ -9,12 +9,12 @@ monitoring_tool_client.settings_form:
 monitoring_tool_client.webhook.http:
   path: '/monitoring-tool/api/v1/{project_hash}/webhook'
   defaults:
-    _controller: '\Drupal\monitoring_tool_client\Controller\WebHookController::sendModules'
+    _controller: '\Drupal\monitoring_tool_client\Controller\WebHookController::results'
   methods: [GET]
   requirements:
     _custom_access: '\Drupal\monitoring_tool_client\Controller\WebHookController::checkAccess'
   options:
-    no_cache: TRUE
+    no_cache: 'TRUE'
 
 monitoring_tool_client.test_connection.http:
   path: '/monitoring-tool/api/v1/{project_hash}/test'
@@ -24,4 +24,4 @@ monitoring_tool_client.test_connection.http:
   requirements:
     _custom_access: '\Drupal\monitoring_tool_client\Controller\ConnectionResolver::checkAccess'
   options:
-    no_cache: TRUE
+    no_cache: 'TRUE'

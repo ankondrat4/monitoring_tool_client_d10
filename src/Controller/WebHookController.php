@@ -66,9 +66,9 @@ class WebHookController implements ContainerInjectionInterface {
    * @return \Symfony\Component\HttpFoundation\Response
    *   Http response.
    */
-  public function sendModules($project_hash) {
+  public function results($project_hash) {
     try {
-      $this->clientApi->sendModules();
+      $this->clientApi->sendRequest();
     }
     catch (GuzzleException $exception) {
       return new Response(NULL, Response::HTTP_SERVICE_UNAVAILABLE);
