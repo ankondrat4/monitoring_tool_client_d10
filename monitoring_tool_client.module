@@ -53,6 +53,9 @@ function monitoring_tool_client_menu() {
     'page arguments' => array(3),
     'file' => 'monitoring_tool_client.webhook.inc',
     'type' => MENU_CALLBACK,
+//    'access arguments' => array(
+//      'access content',
+//    ),
     'access callback' => 'monitoring_tool_client_check_access',
     'access arguments' => array(3),
   );
@@ -148,6 +151,8 @@ function monitoring_tool_client_get_modules() {
     'monitoring_tool_client_filter_contrib_projects'
   );
 
+  $db_updates = monitoring_tool_client_get_database_updates();
+
   $result['drupal'] = [
     'machine_name' => 'drupal',
     'name' => 'Drupal core',
@@ -155,6 +160,7 @@ function monitoring_tool_client_get_modules() {
     'version' => VERSION,
     'status' => TRUE,
     'skip_updates' => FALSE,
+    'database_updates' => (isset($db_updates['system'])) ? TRUE : FALSE,
   ];
 
   foreach ($module_list as $module_name => $module_data) {
@@ -166,10 +172,27 @@ function monitoring_tool_client_get_modules() {
       'version' => $info['version'],
       'status' => !empty($module_enabled_list[$info['project']]),
       'skip_updates' => !empty($config['skip_updates'][$info['project']]),
+      'database_updates' => (isset($db_updates[$info['project']])) ? TRUE : FALSE,
     );
   }
 
   return $result;
+}
+
+function monitoring_tool_client_get_database_updates() {
+  $updates = [];
+  $config = variable_get(MONITORING_TOOL_CLIENT_SETTINGS);
+  $skip = $config['skip_drupal_database_update'];
+
+  if (!$skip) {
+    require_once DRUPAL_ROOT . '/includes/update.inc';
+    require_once DRUPAL_ROOT . '/includes/install.inc';
+    drupal_load_updates();
+    update_fix_compatibility();
+    $updates = update_get_update_list();
+  }
+
+  return $updates;
 }
 
 /**
