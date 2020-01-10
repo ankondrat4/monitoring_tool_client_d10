@@ -179,7 +179,7 @@ function monitoring_tool_client_get_modules() {
 function monitoring_tool_client_get_database_updates() {
   $updates = [];
   $config = variable_get(MONITORING_TOOL_CLIENT_SETTINGS);
-  $skip = $config['skip_database_updates'];
+  $skip = $config['skip_drupal_database_update'];
 
   if (!$skip) {
     require_once DRUPAL_ROOT . '/includes/update.inc';
