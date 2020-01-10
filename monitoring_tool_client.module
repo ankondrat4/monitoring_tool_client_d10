@@ -53,9 +53,6 @@ function monitoring_tool_client_menu() {
     'page arguments' => array(3),
     'file' => 'monitoring_tool_client.webhook.inc',
     'type' => MENU_CALLBACK,
-//    'access arguments' => array(
-//      'access content',
-//    ),
     'access callback' => 'monitoring_tool_client_check_access',
     'access arguments' => array(3),
   );
