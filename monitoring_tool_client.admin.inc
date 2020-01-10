@@ -109,7 +109,7 @@ function monitoring_tool_client_settings_form(array $form, array &$form_state) {
 
   $form['skip_checking_updates']['skip_drupal_database_update'] = [
     '#type' => 'checkbox',
-    '#parents' => ['skip_updates'],
+    '#parents' => array('skip_drupal_database_update'),
     '#title' => t('Drupal database update'),
     '#description' => t('Ignore checking for Drupal core and modules database updates.'),
     '#default_value' => $config['skip_drupal_database_update'],
