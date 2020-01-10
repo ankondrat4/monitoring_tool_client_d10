@@ -5,6 +5,7 @@ namespace Drupal\monitoring_tool_client\Service;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\Extension;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\monitoring_tool_client\Service\DatabaseServiceInterface;
 
 /**
  * Class ModuleCollectorService.
@@ -26,19 +27,30 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
   protected $moduleHandler;
 
   /**
+   * The list of Drupal core and modules database updates.
+   *
+   * @var \Drupal\monitoring_tool_client\Service\DatabaseServiceInterface
+   */
+  protected $database;
+
+  /**
    * CollectModulesService constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   Configuration manager.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler service.
+   * @param \Drupal\monitoring_tool_client\Service\DatabaseServiceInterface $database
+   *   The list of Drupal core and modules database updates.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
-    ModuleHandlerInterface $module_handler
+    ModuleHandlerInterface $module_handler,
+    DatabaseServiceInterface $database
   ) {
     $this->configFactory = $config_factory;
     $this->moduleHandler = $module_handler;
+    $this->database = $database;
   }
 
   /**
@@ -55,6 +67,8 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
       [static::class, 'filterContribModules']
     );
 
+    $db_updates = $this->database->getUpdates();
+
     $result['drupal'] = [
       'machine_name' => 'drupal',
       'name' => 'Drupal core',
@@ -62,6 +76,7 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
       'status' => TRUE,
       'version' => \Drupal::VERSION,
       'skip_updates' => FALSE,
+      'database_updates' => (isset($db_updates['system'])) ? TRUE : FALSE,
     ];
 
     foreach ($module_list as $module_name => $module) {
@@ -73,6 +88,7 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
         'version' => $info['version'],
         'status' => $this->moduleHandler->moduleExists($module->getName()),
         'skip_updates' => !empty($skip_list[$module->getName()]),
+        'database_updates' => (isset($db_updates[$module->getName()])) ? TRUE : FALSE,
       ];
     }
 

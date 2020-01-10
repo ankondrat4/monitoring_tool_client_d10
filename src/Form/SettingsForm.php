@@ -155,6 +155,14 @@ class SettingsForm extends FormBase {
       '#open' => FALSE,
     ];
 
+    $form['skip_checking_updates']['skip_drupal_database_update'] = [
+      '#type' => 'checkbox',
+      '#parents' => ['skip_updates'],
+      '#title' => $this->t('Drupal database update'),
+      '#description' => $this->t('Ignore checking for Drupal core and modules database updates.'),
+      '#default_value' => $config->get('skip_database_updates'),
+    ];
+
     $skip_updates_options = array_column(
       $this->moduleCollector->getModules(),
       'name',
