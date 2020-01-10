@@ -8,8 +8,8 @@ namespace Drupal\monitoring_tool_client\Service;
 interface ClientApiServiceInterface {
 
   /**
-   * Will do HTTP request with list of the modules.
+   * Send HTTP request with modules list and database updates.
    */
-  public function sendModules();
+  public function sendRequest();
 
 }

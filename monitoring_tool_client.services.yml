@@ -5,8 +5,12 @@ services:
 
   monitoring_tool_client.module_collector:
     class: Drupal\monitoring_tool_client\Service\ModuleCollectorService
-    arguments: ['@config.factory', '@module_handler']
+    arguments: ['@config.factory', '@module_handler', '@monitoring_tool_client.database']
 
   monitoring_tool_client.client_api:
     class: Drupal\monitoring_tool_client\Service\ClientApiService
     arguments: ['@monitoring_tool_client.server_connector', '@monitoring_tool_client.module_collector']
+
+  monitoring_tool_client.database:
+    class: Drupal\monitoring_tool_client\Service\DatabaseService
+    arguments: ['@config.factory']
