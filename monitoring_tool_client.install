@@ -15,6 +15,6 @@ function monitoring_tool_client_install() {
     'webhook' => TRUE,
     'report_interval' => 0,
     'skip_updates' => array(),
-    'skip_database_updates' => FALSE,
+    'skip_drupal_database_update' => FALSE,
   ));
 }
