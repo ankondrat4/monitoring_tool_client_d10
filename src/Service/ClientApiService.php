@@ -43,6 +43,7 @@ class ClientApiService implements ClientApiServiceInterface {
   public function sendRequest() {
     return $this->serverConnector->send([
       'modules' => $this->moduleCollector->getModules(),
+      'db_update_status' => $this->moduleCollector->pendingDBUpdates(),
     ]);
   }
 
