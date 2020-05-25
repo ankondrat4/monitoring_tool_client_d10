@@ -124,4 +124,27 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
     return FALSE;
   }
 
+  /**
+   * Check pending database updates on the site.
+   *
+   * @return bool
+   *   Has pending database updates or not.
+   */
+  public function pendingDBUpdates() {
+    // Check installed modules.
+    $has_pending_updates = FALSE;
+    foreach (\Drupal::moduleHandler()->getModuleList() as $module => $filename) {
+      $updates = drupal_get_schema_versions($module);
+      if ($updates !== FALSE) {
+        $default = drupal_get_installed_schema_version($module);
+        if (max($updates) > $default) {
+          $has_pending_updates = TRUE;
+          break;
+        }
+      }
+    }
+
+    return $has_pending_updates;
+  }
+
 }
