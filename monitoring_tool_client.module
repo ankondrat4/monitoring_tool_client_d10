@@ -198,6 +198,7 @@ function monitoring_tool_client_get_database_updates() {
 function monitoring_tool_client_send_modules() {
   monitoring_tool_client_server_connector('POST', array(
     'modules' => monitoring_tool_client_get_modules(),
+    'db_update_status' => count(monitoring_tool_client_get_database_updates()) >= 1,
   ));
 }
 
