@@ -24,7 +24,7 @@ function monitoring_tool_client_cron() {
   ) {
     /** @var \Drupal\monitoring_tool_client\Service\ClientApiServiceInterface $client_api */
     $client_api = \Drupal::service('monitoring_tool_client.client_api');
-    $client_api->sendModules();
+    $client_api->sendRequest();
     $state_api->set('monitoring_tool_client.last_execution', $request_time);
   }
 }
