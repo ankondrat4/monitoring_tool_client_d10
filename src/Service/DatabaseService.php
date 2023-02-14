@@ -49,7 +49,6 @@ class DatabaseService implements DatabaseServiceInterface {
     require_once DRUPAL_ROOT . '/core/includes/update.inc';
     require_once DRUPAL_ROOT . '/core/includes/install.inc';
     drupal_load_updates();
-    update_fix_compatibility();
   }
 
 }

@@ -63,7 +63,7 @@ class ServerConnectorService implements ServerConnectorServiceInterface {
       $default_options = [
         RequestOptions::JSON => !empty($data) ? $data : NULL,
         RequestOptions::QUERY => [
-          'time' => time(),
+          'time' => \Drupal::time()->getCurrentTime(),
         ],
         RequestOptions::ALLOW_REDIRECTS => TRUE,
         RequestOptions::VERIFY => FALSE,

@@ -62,8 +62,7 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
     $skip_list = $configuration->get('skip_updates');
     /** @var \Drupal\Core\Extension\Extension[] $module_list */
     $module_list = array_filter(
-      // The "extension.list.module" service is not supported for < Drupal 8.6.
-      system_rebuild_module_data(),
+      \Drupal::service("extension.list.module")->getList(),
       [static::class, 'filterContribModules']
     );
 
@@ -135,7 +134,7 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
     $has_pending_updates = FALSE;
     foreach (\Drupal::moduleHandler()->getModuleList() as $module => $filename) {
       $updates = drupal_get_schema_versions($module);
-      if ($updates !== FALSE) {
+      if ($updates !== FALSE && !empty($updates)) {
         $default = drupal_get_installed_schema_version($module);
         if (max($updates) > $default) {
           $has_pending_updates = TRUE;
