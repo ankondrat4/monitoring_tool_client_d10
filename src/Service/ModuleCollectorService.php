@@ -34,6 +34,13 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
   protected $database;
 
   /**
+   * The update registry service.
+   *
+   * @var \Drupal\Core\Update\UpdateHookRegistry
+   */
+  protected $updateRegistry;
+
+  /**
    * CollectModulesService constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -42,6 +49,8 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
    *   The module handler service.
    * @param \Drupal\monitoring_tool_client\Service\DatabaseServiceInterface $database
    *   The list of Drupal core and modules database updates.
+   * @param \Drupal\Core\Update\UpdateHookRegistry $update_registry
+   *   The update registry service.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
@@ -51,6 +60,7 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
     $this->configFactory = $config_factory;
     $this->moduleHandler = $module_handler;
     $this->database = $database;
+    $this->updateRegistry = $update_registry;
   }
 
   /**
@@ -132,10 +142,10 @@ class ModuleCollectorService implements ModuleCollectorServiceInterface {
   public function pendingDBUpdates() {
     // Check installed modules.
     $has_pending_updates = FALSE;
-    foreach (\Drupal::moduleHandler()->getModuleList() as $module => $filename) {
-      $updates = drupal_get_schema_versions($module);
+    foreach ($this->moduleHandler->getModuleList() as $module => $filename) {
+      $updates = $this->updateRegistry->getAvailableUpdates($module);
       if ($updates !== FALSE && !empty($updates)) {
-        $default = drupal_get_installed_schema_version($module);
+        $default = $this->updateHookRegistry->getInstalledVersion($module);
         if (max($updates) > $default) {
           $has_pending_updates = TRUE;
           break;

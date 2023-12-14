@@ -2,4 +2,4 @@ name: Monitoring tool Client
 description: Will collect and send report about the system structure.
 package: Web services
 type: module
-core_version_requirement: ^8 || ^9
+core_version_requirement: ^9.3 || ^10

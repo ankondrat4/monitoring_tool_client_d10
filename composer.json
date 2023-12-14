@@ -1,5 +1,5 @@
 {
-    "name": "adyax_support/monitoring_tool_client",
+    "name": "smile/monitoring_tool_client",
     "description": "The module provides a monitoring tool for the client-side.",
     "type": "drupal-module",
     "keywords": ["Monitoring Tool Client", "Monitoring Tool", "Drupal", "Drupal 8", "Adyax"],
@@ -17,6 +17,6 @@
         }
     ],
     "require": {
-      "drupal/core": "~9.0"
+      "drupal/core": "^9.3 || ^10"
     }
 }
